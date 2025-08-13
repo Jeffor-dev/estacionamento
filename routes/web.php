@@ -4,7 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MotoristaController;
-use App\Http\Controllers\CaminhaoController;
+use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\ControleEstacionamentoController;
 
 use Inertia\Inertia;
@@ -29,9 +29,15 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
+//dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+
+//motorista
 Route::get('/motorista', [MotoristaController::class, 'index'])->middleware(['auth', 'verified'])->name('motorista.index');
-Route::get('/caminhoes', [CaminhaoController::class, 'index'])->middleware(['auth', 'verified'])->name('caminhoes.index');
+Route::get('/motorista/cadastro', [MotoristaController::class, 'cadastroMotorista'])->middleware(['auth', 'verified'])->name('motorista.cadastro');
+Route::post('/motorista', [MotoristaController::class, 'cadastrar'])->middleware(['auth', 'verified'])->name('motorista.cadastrar');
+
+Route::get('/relatorio', [RelatorioController::class, 'index'])->middleware(['auth', 'verified'])->name('relatorio.index');
 Route::get('/estacionamento', [ControleEstacionamentoController::class, 'index'])->middleware(['auth', 'verified'])->name('estacionamento.index');
 
 Route::get('/account', function () {

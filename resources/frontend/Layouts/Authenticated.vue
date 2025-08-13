@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lhr lpr lfr">
     <q-header>
-      <q-toolbar class="tw-bg-primary-800">
+      <q-toolbar class="bg-warning">
         <q-btn
           dense
           flat
@@ -22,12 +22,12 @@
       </q-toolbar>
     </q-header>
 
-    <NavDrawer
+    <NavDrawer style="background-color: #C2FFF8;"
       v-model:is-open="isNavDrawerOpen"
       v-model:mini="layout.navigationDrawer.mini"
     >
-      <NavList bookmarker>
-        <NavLink
+      <NavList bookmarker >
+        <NavLink 
           :href="route('dashboard')"
           :active="route().current('dashboard')"
         >
@@ -56,13 +56,13 @@
           Motorista
         </NavLink>
         <NavLink
-          :href="route('caminhoes.index')"
-          :active="route().current('caminhoes.index')"
+          :href="route('relatorio.index')"
+          :active="route().current('relatorio.index')"
         >
           <template #icon>
-            <i-mdi-truck-outline />
+            <i-mdi-chart-box-outline />
           </template>
-          Caminhões
+          Relatórios
         </NavLink>
         <NavLink
           :href="route('account.index')"

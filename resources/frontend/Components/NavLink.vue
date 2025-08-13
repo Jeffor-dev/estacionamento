@@ -19,11 +19,12 @@
         tw-group
         tw-rounded-md
         tw-transition
+        text-secondary
       "
       :class="{
         'tw-text-primary-500 dark:tw-text-primary-400': !active,
-        'tw-text-accent-700 hover:tw-text-accent-700 focus:tw-text-accent-700 dark:tw-text-accent-500 dark:hover:tw-text-accent-500 dark:focus:tw-text-accent-500 hover:tw-cursor-default': active,
-        'hover:tw-bg-primary-100 dark:hover:tw-bg-slate-700': !mini && !active
+        'secondary hover:secondary focus:secondary dark:secondary dark:hover:secondary dark:focus:secondary hover:tw-cursor-default': active,
+        '': !mini && !active
       }"
     >
       <span
@@ -40,7 +41,7 @@
           tw-transition
         "
         :class="{
-          'group-hover:tw-bg-primary-100 dark:group-hover:tw-bg-slate-700': mini && !active
+          'group-hover:bg-secondary dark:group-hover:tw-bg-slate-700': mini && !active
         }"
       >
         <slot name="icon" />

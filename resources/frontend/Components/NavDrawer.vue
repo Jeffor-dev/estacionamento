@@ -15,12 +15,12 @@
   >
     <q-scroll-area class="fit">
       <div class="drawer__content">
-        <q-toolbar class="drawer__toolbar tw-bg-primary-500 text-white">
+        <q-toolbar class="drawer__toolbar bg-secondary text-white">
           <div class="drawer__logo tw-flex tw-justify-center tw-items-center">
-            <ApplicationLogo class="tw-w-9 tw-fill-white" />
+            <i-mdi-truck class="tw-text-2xl" />
           </div>
           <q-toolbar-title class="tw-flex tw-items-center">
-            <span class="tw-font-extralight">Pronto Fuel</span>
+            <span class="tw-font-extralight">Estaciona Aqui</span>
           </q-toolbar-title>
         </q-toolbar>
         <slot />
