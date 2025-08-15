@@ -6,12 +6,18 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Motorista;
 use App\Models\Caminhao;
+use Illuminate\Database\Eloquent\Builder;
 
 class MotoristaController extends Controller
 {
+    protected static $searchableAttributes = [
+        'nome',
+        'cpf',
+        'telefone',
+    ];
     public function index()
     {
-        $motoristas = Motorista::all();
+        $motoristas = Motorista::with('caminhao')->get();
 
         return Inertia::render('Motorista/Index', [
             'title' => 'Motoristas',
@@ -55,5 +61,25 @@ class MotoristaController extends Controller
         $caminhao->save();
 
         return redirect()->route('motorista.index')->with('success', 'Motorista cadastrado com sucesso!');
+    }
+
+    public function api(Request $request){
+        $page = $request->get('page', 1);
+        $rowsPerPage = $request->get('rowsPerPage', 10);
+        $startRow = ($page - 1) * $rowsPerPage;
+
+        $consulta = Motorista::with('caminhao');
+        if ($request->filled('busca')) {
+            $consulta->where(function (Builder $query) use ($request) {
+                foreach (self::$searchableAttributes as $atributo) {
+                    $query->orWhere($atributo, 'like', '%' . $request->get('busca') . '%');
+                }
+            });
+        }
+        $consulta->orderByRaw('1');
+
+        $ret['rowsNumber'] = $consulta->count();
+        $ret['lista'] = $consulta->skip($startRow)->take($rowsPerPage)->get();
+        return response()->json($ret);
     }
 }

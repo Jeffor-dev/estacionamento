@@ -2,13 +2,13 @@
   <div class="tw-p-6">
     <Head :title="title" />
 
-    <div class="q-pa-md flex justify-center">
-      <q-card style="width: 1000px;">
+    <div class="q-pa-md flex justify-center" style="flex-direction: column; width: 70vw;">
+      <q-card style="width: 70vw; min-height: 50vh;">
         <q-card-section class="bg-secondary text-white">
           <span class="tw-text-lg text-bold">Dados do Motorista</span>
         </q-card-section>
         <q-card-section>
-          <div class="row flex tw-gap-3 tw-mb-3">
+          <div class="row flex tw-gap-5 tw-my-3 ">
             <div class="col-6">
               <q-input filled v-model="motorista.nome" label="Nome"/>
             </div>
@@ -16,14 +16,15 @@
               <q-input filled v-model="motorista.cpf" label="CPF" mask="###.###.###-##"/>
             </div>
           </div>
-          <q-input filled v-model="motorista.telefone" label="Telefone" mask="(##) #####-####"/>
+          <q-input class="tw-my-5" filled v-model="motorista.telefone" label="Telefone" mask="(##) #####-####"/>
+          <q-input class="tw-my-5" filled v-model="motorista.observacao" label="Observação"/>
         </q-card-section>
 
         <q-card-section class="bg-secondary text-white">
           <span class="tw-text-lg text-bold">Informação do Veículo</span>
         </q-card-section>
         <q-card-section>
-          <div class="row tw-gap-3 flex">
+          <div class="row tw-gap-3 flex tw-my-5">
             <div class="col">
                 <q-input filled v-model="motorista.placa" label="Placa" mask="AAA-#A##" />
             </div>
@@ -34,12 +35,13 @@
               <q-select filled v-model="motorista.cor" label="Cor" :options="cores"/>
             </div>
           </div>
+          <q-card-actions class="justify-end" >
+            <q-btn label="Voltar" color="warning" :href="route('motorista.index')" />
+            <q-btn label="Cadastrar" color="secondary" @click="salvarMotorista" />
+          </q-card-actions>
         </q-card-section>
         
-        <q-card-actions class="justify-end tw-bg-gray-100">
-          <q-btn label="Voltar" color="warning" :href="route('motorista.index')" />
-          <q-btn label="Cadastrar" color="secondary" @click="salvarMotorista" />
-        </q-card-actions>
+
       </q-card>
 
     </div>

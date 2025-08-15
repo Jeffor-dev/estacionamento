@@ -34,6 +34,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['au
 
 //motorista
 Route::get('/motorista', [MotoristaController::class, 'index'])->middleware(['auth', 'verified'])->name('motorista.index');
+Route::get('/motorista/{id}', [MotoristaController::class, 'visualizar'])->middleware(['auth', 'verified'])->name('motorista.visualizar');
 Route::get('/motorista/cadastro', [MotoristaController::class, 'cadastroMotorista'])->middleware(['auth', 'verified'])->name('motorista.cadastro');
 Route::post('/motorista', [MotoristaController::class, 'cadastrar'])->middleware(['auth', 'verified'])->name('motorista.cadastrar');
 
