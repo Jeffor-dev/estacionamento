@@ -1,5 +1,5 @@
 <template layout="AppShell,Authenticated">
-  <div class="tw-p-6" style="max-width: 70vw;">
+  <div class="tw-p-6" style="max-width: 90vw;">
     <Head :title="title" />
 
     <q-table title="Motorista" ref="tableRef" :rows="dados" :columns="columns" row-key="id" :filter="filter"
@@ -16,7 +16,7 @@
       </template>
       <template v-slot:top-right>
         <div class="q-gutter-sm">
-          <q-btn color="primary" no-caps :href="route('motorista.index')">
+          <q-btn color="primary" no-caps :href="route('motorista.cadastro')">
             Adicionar
             <q-tooltip>Adiciona Motorista</q-tooltip>
           </q-btn>
@@ -43,7 +43,6 @@
           <q-td key="id" :props="props">
             {{ props.row.id }}
           </q-td>
-
           <q-td key="nome" :props="props">
             {{ props.row.nome }}
           </q-td>
@@ -58,6 +57,11 @@
           </q-td>
           <q-td key="caminhao-cor" :props="props">
             {{ props.row.caminhao?.cor || 'N/A' }}
+          </q-td>
+          <q-td key="actions" :props="props">
+            <q-btn color="primary" size="sm" @click.stop="visualizar(props.row.id)">
+              <i-mdi-eye />
+            </q-btn>
           </q-td>
         </q-tr>
       </template>
@@ -102,14 +106,12 @@
       { name: 'caminhao-placa', align: 'left', label: 'Caminhão Placa', field: row => row.caminhao?.placa || '' },
       { name: 'caminhao-modelo', align: 'right', label: 'Caminhão Modelo', field: row => row.caminhao?.modelo || '' },
       { name: 'caminhao-cor', align: 'right', label: 'Caminhão Cor', field: row => row.caminhao?.cor || '' },
+      { name: 'actions', align: 'right', label: 'Ações', field: 'actions', sortable: false, style: 'width: 120px' }
     ]
 
     return baseColumns;
   });
 
-  // Remover o onUpdated para evitar requisições duplicadas
-
-  // Substituir onRequest por uma versão com debounce
   const debouncedRequest = debounce((props) => {
     const { page, rowsPerPage, sortBy, descending } = props.pagination;
     const filter = props.filter;

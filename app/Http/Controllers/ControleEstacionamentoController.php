@@ -4,14 +4,171 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Motorista;
+use App\Models\Estacionamento;
+use Illuminate\Database\Eloquent\Builder;
 
 class ControleEstacionamentoController extends Controller
 {
     public function index()
     {
+        $registros = Estacionamento::with('motorista.caminhao')->get()->map(function ($registro) {
+            return [
+                'id' => $registro->id,
+                'motorista_id' => $registro->motorista_id,
+                'entrada' => $registro->entrada,
+                'saida' => $registro->saida ? $registro->saida : null,
+                'tipo_pagamento' => $registro->tipo_pagamento,
+                'valor_pagamento' => $registro->valor_pagamento,
+                'motorista' => $registro->motorista ? [
+                    'nome' => $registro->motorista->nome,
+                    'caminhao' => [
+                        'placa' => $registro->motorista->caminhao ? $registro->motorista->caminhao->placa : null,
+                        'modelo' => $registro->motorista->caminhao ? $registro->motorista->caminhao->modelo : null,
+                        'cor' => $registro->motorista->caminhao ? $registro->motorista->caminhao->cor : null,
+                    ],
+                ] : null,
+            ];
+        });
+
         return Inertia::render('Estacionamento/Index', [
             'user' => auth()->user(),
             'title' => 'Estacionamento',
+            'registros' => $registros,
         ]);
+    }
+
+    public function cadastroEstacionamento()
+    {
+        $motoristas = Motorista::with('caminhao')
+            ->get()
+            ->map(function ($motorista) {
+                return [
+                    'id' => $motorista->id,
+                    'nome' => $motorista->nome,
+                    'cpf' => $motorista->cpf,
+                    'modelo' => $motorista->caminhao->modelo ?? 'N/A',
+                    'placa' => $motorista->caminhao->placa ?? 'N/A',
+                    'cor' => $motorista->caminhao->cor ?? 'N/A',
+                    'label' => 'Motorista: ' . $motorista->nome . ' - ' . 'Placa: ' . ($motorista->caminhao->placa ?? 'N/A') . ' - ' . 'Caminhão: ' . ($motorista->caminhao->modelo ?? 'N/A') . ' '. ($motorista->caminhao->cor ?? 'N/A')   ,
+                ];
+            });
+
+        return Inertia::render('Estacionamento/Cadastro', [
+            'title' => 'Registrar Entrada',
+            'motoristas' => $motoristas,
+        ]);
+    }
+
+    public function cadastrar(Request $request)
+    {
+        $request->validate([
+            'motorista' => 'required',
+            'pagamento' => 'required|string|max:20',
+            'valorPagamento' => 'required|numeric|min:0',
+        ]);
+
+        $registro = Estacionamento::create([
+            'motorista_id' => $request->motorista,
+            'entrada' => now('America/Sao_Paulo'),
+            'saida' => null,
+            'tipo_pagamento' => $request->pagamento,
+            'valor_pagamento' => $request->valorPagamento,
+        ]);
+
+        // Aqui você pode adicionar a lógica para registrar a entrada no estacionamento
+        // Exemplo: Estacionamento::create([...]);
+
+        return redirect()->route('estacionamento.index')->with('success', 'Entrada registrada com sucesso!');
+    }
+
+    public function api(Request $request)
+    {
+        $busca = $request->get('busca');
+        $page = $request->get('page', 1);
+        $rowsPerPage = $request->get('rowsPerPage', 10);
+        $sortBy = $request->get('sortBy');
+        $descending = $request->get('descending', false);
+        
+        $startRow = ($page - 1) * $rowsPerPage;
+        
+        $ret = [];
+        
+        // Incluir todos os registros (ativos e finalizados)
+        $consulta = Estacionamento::with(['motorista.caminhao']);
+        
+        if ($busca) {
+            $consulta->where(function (Builder $q) use ($busca) {
+                $q->whereHas('motorista', function ($subQ) use ($busca) {
+                    $subQ->where('nome', 'like', '%' . $busca . '%')
+                         ->orWhere('cpf', 'like', '%' . $busca . '%');
+                })->orWhereHas('motorista.caminhao', function ($subQ) use ($busca) {
+                    $subQ->where('placa', 'like', '%' . $busca . '%')
+                         ->orWhere('modelo', 'like', '%' . $busca . '%')
+                         ->orWhere('cor', 'like', '%' . $busca . '%');
+                });
+            });
+        }
+        
+        $consulta->orderBy('entrada', 'desc');
+
+        $ret['rowsNumber'] = $consulta->count();
+        $registros = $consulta->skip($startRow)->take($rowsPerPage)->get();
+        
+        // Formatar dados conforme necessário
+        $ret['lista'] = $registros->map(function ($registro) {
+            return [
+                'id' => $registro->id,
+                'motorista' => $registro->motorista ? $registro->motorista->nome : 'N/A',
+                'entrada' => $registro->entrada,
+                'saida' => $registro->saida,
+                'valor' => $registro->valor,
+                'status' => $registro->saida ? 'finalizado' : 'ativo',
+                'caminhao' => [
+                    'placa' => $registro->motorista->caminhao ? $registro->motorista->caminhao->placa : 'N/A',
+                    'modelo' => $registro->motorista->caminhao ? $registro->motorista->caminhao->modelo : 'N/A',
+                    'cor' => $registro->motorista->caminhao ? $registro->motorista->caminhao->cor : 'N/A',
+                ],
+            ];
+        });
+
+        return response()->json($ret);
+    }
+
+    public function registrarSaida($id)
+    {
+        try {
+            // Buscar o registro de estacionamento
+            $estacionamento = Estacionamento::with('motorista')->findOrFail($id);
+            
+            // Verificar se já não tem saída registrada
+            if ($estacionamento->saida) {
+                return back()->withErrors(['error' => 'Este veículo já possui saída registrada.']);
+            }
+            
+            $agora = now();
+            $entrada = \Carbon\Carbon::parse($estacionamento->entrada);
+            
+            // Calcular o tempo em horas (mínimo 1 hora)
+            $horas = $entrada->diffInHours($agora);
+            if ($horas < 1) {
+                $horas = 1; // Cobrança mínima de 1 hora
+            }
+            
+            // Valor por hora (pode ser configurável no futuro)
+            $valorPorHora = 10.00;
+            $valorTotal = $horas * $valorPorHora;
+            
+            // Registrar a saída com horário atual e valor calculado
+            $estacionamento->update([
+                'saida' => $agora,
+                'valor' => $valorTotal
+            ]);
+            
+            return back()->with('success', 'Saída registrada com sucesso para ' . $estacionamento->motorista->nome . '. Valor: R$ ' . number_format($valorTotal, 2, ',', '.'));
+            
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Erro ao registrar saída: ' . $e->getMessage()]);
+        }
     }
 }

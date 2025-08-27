@@ -8,4 +8,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/motorista', [App\Http\Controllers\MotoristaController::class,'api'])->name('motorista.api');
-
+Route::get('/estacionamento', [App\Http\Controllers\ControleEstacionamentoController::class,'api'])->name('estacionamento.api');

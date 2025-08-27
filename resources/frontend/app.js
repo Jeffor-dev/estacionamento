@@ -5,9 +5,10 @@ import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
 import { createPinia } from 'pinia'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
-import { Quasar } from 'quasar'
+import { Quasar, Notify } from 'quasar'
 import { modal } from 'momentum-modal'
 import quasarIconSet from 'quasar/icon-set/svg-mdi-v6'
+import quasarLang from 'quasar/lang/pt-BR'
 import axios from 'axios'
 import Notifications from '@kyvg/vue3-notification'
 
@@ -25,7 +26,11 @@ createInertiaApp({
       .use(plugin)
       .use(Notifications)
       .use(Quasar, {
-        iconSet: quasarIconSet
+        iconSet: quasarIconSet,
+        lang: quasarLang,
+        plugins: {
+          Notify
+        }
       })
       .use(modal, {
         resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue'))

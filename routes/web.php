@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MotoristaController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\ControleEstacionamentoController;
+use App\Http\Controllers\CupomController;
 
 use Inertia\Inertia;
 
@@ -34,12 +35,18 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['au
 
 //motorista
 Route::get('/motorista', [MotoristaController::class, 'index'])->middleware(['auth', 'verified'])->name('motorista.index');
-Route::get('/motorista/{id}', [MotoristaController::class, 'visualizar'])->middleware(['auth', 'verified'])->name('motorista.visualizar');
+// Route::get('/motorista/{id}', [MotoristaController::class, 'visualizar'])->middleware(['auth', 'verified'])->name('motorista.visualizar');
 Route::get('/motorista/cadastro', [MotoristaController::class, 'cadastroMotorista'])->middleware(['auth', 'verified'])->name('motorista.cadastro');
 Route::post('/motorista', [MotoristaController::class, 'cadastrar'])->middleware(['auth', 'verified'])->name('motorista.cadastrar');
 
 Route::get('/relatorio', [RelatorioController::class, 'index'])->middleware(['auth', 'verified'])->name('relatorio.index');
 Route::get('/estacionamento', [ControleEstacionamentoController::class, 'index'])->middleware(['auth', 'verified'])->name('estacionamento.index');
+Route::get('/estacionamento/cadastro', [ControleEstacionamentoController::class, 'cadastroEstacionamento'])->middleware(['auth', 'verified'])->name('estacionamento.cadastro');
+Route::post('/estacionamento', [ControleEstacionamentoController::class, 'cadastrar'])->middleware(['auth', 'verified'])->name('estacionamento.cadastrar');
+Route::put('/estacionamento/saida/{id}', [ControleEstacionamentoController::class, 'registrarSaida'])->middleware(['auth', 'verified'])->name('estacionamento.saida');
+
+// Rota para gerar cupom
+Route::get('/cupom/{id}', [CupomController::class, 'gerarCupom'])->middleware(['auth', 'verified'])->name('cupom.gerar');
 
 Route::get('/account', function () {
     return Inertia::render('Account', [
