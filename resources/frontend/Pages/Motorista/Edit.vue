@@ -1,4 +1,4 @@
-<template>
+<template layout="AppShell,Authenticated">
   <div class="tw-p-6">
     <Head :title="title" />
 
@@ -56,7 +56,7 @@
           </div>
           <q-card-actions class="justify-end" >
             <q-btn label="Voltar" color="warning" :href="route('motorista.index')" />
-            <q-btn label="Cadastrar" color="secondary" @click="salvarMotorista" />
+            <q-btn label="Salvar" color="secondary" @click="salvarMotorista" />
           </q-card-actions>
         </q-card-section>
       </q-card>
@@ -65,19 +65,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 
-const motorista = ref({
-  nome: '',
-  cpf: '',
-  telefone: '',
-  observacao: '',
-  empresa: '',
-  placa: '',
-  cor: '',
-  modelo: ''
+const props = defineProps({
+  motorista: Object,
+  title: String,
 })
+
+const motorista = ref({ ...props.motorista })
 
 const coresOriginais = [
   'AMARELO',
@@ -135,6 +131,6 @@ function filtrarModelos(val, update) {
 }
 
 const salvarMotorista = () => {
-  router.post(route('motorista.cadastrar'), motorista.value)
+    router.put(route('motorista.atualizar', motorista.value.id), motorista.value)
 }
 </script>

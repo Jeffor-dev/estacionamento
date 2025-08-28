@@ -25,6 +25,10 @@ setDarkMode()
 
 const loadingIndicator = ref(null)
 
-router.on('start', () => loadingIndicator.value.start())
-router.on('finish', () => loadingIndicator.value.stop())
+router.on('start', () => {
+  if (loadingIndicator.value) loadingIndicator.value.start()
+})
+router.on('finish', () => {
+  if (loadingIndicator.value) loadingIndicator.value.stop()
+})
 </script>

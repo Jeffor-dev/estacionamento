@@ -7,11 +7,15 @@
            <q-btn color="secondary" label="Registrar Entrada" :href="route('estacionamento.cadastro')"/>
            <q-btn color="warning" label="Exportar PDF" :href="route('motorista.cadastro')"/>
       </div>
+      <div class="row items-center tw-mb-4">
+        <q-radio v-model="statusFiltro" val="ativo" label="Ativos" color="green" />
+        <q-radio v-model="statusFiltro" val="finalizado" label="Finalizados" color="blue" class="tw-ml-4" />
+      </div>
     </div>
         <q-table 
         title="Controle de Estacionamento" 
         ref="tableRef" 
-        :rows="dados" 
+  :rows="dadosFiltrados" 
         :columns="columns" 
         row-key="id" 
         :filter="filter"
@@ -146,6 +150,15 @@
     rowsNumber: 0
   })
   const dados = ref([])
+  const statusFiltro = ref('ativo')
+  const dadosFiltrados = computed(() => {
+    if (statusFiltro.value === 'finalizado') {
+      return dados.value
+        .filter(row => row.status === 'finalizado')
+        .sort((a, b) => new Date(b.saida) - new Date(a.saida))
+    }
+    return dados.value.filter(row => row.status === statusFiltro.value)
+  })
 
   // Modal de confirmação
   const modalConfirmacao = ref(false)
@@ -226,21 +239,21 @@
   function confirmarSaida() {
     processandoSaida.value = true
     
-    // Teste rápido da notificação
-    console.log('Iniciando processo de saída...')
-    
     router.put(route('estacionamento.saida', registroSelecionado.value), {}, {
-      onSuccess: () => {
+      onSuccess: (page) => {
         // Sucesso - fechar modal e atualizar tabela
+        const id = registroSelecionado.value
         fecharModal()
         tableRef.value.requestServerInteraction()
-        
         // Mostrar notificação de sucesso (usando Quasar Notify)
         $q.notify({
           type: 'positive',
           message: `Saída registrada com sucesso!`,
           position: 'top'
         })
+        setTimeout(() => {
+          gerarCupom(id)
+        }, 2000)
       },
       onError: (errors) => {
         // Erro - mostrar notificação de erro

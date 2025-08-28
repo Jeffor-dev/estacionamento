@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Http\Request;
@@ -9,3 +10,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('/motorista', [App\Http\Controllers\MotoristaController::class,'api'])->name('motorista.api');
 Route::get('/estacionamento', [App\Http\Controllers\ControleEstacionamentoController::class,'api'])->name('estacionamento.api');
+// Relatórios para exportação PDF via frontend
+Route::get('/relatorio/motoristas', [App\Http\Controllers\RelatorioController::class, 'motoristasJson']);
+Route::get('/relatorio/movimentacoes', [App\Http\Controllers\RelatorioController::class, 'movimentacoesJson']);

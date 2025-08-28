@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Foundation\Application;
@@ -21,21 +22,16 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-})->name('welcome');
+Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('welcome');
+
 
 //dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 //motorista
 Route::get('/motorista', [MotoristaController::class, 'index'])->middleware(['auth', 'verified'])->name('motorista.index');
-// Route::get('/motorista/{id}', [MotoristaController::class, 'visualizar'])->middleware(['auth', 'verified'])->name('motorista.visualizar');
+Route::get('/motorista/{id}', [MotoristaController::class, 'editMotorista'])->middleware(['auth', 'verified'])->name('motorista.visualizar');
+Route::put('/motorista/{id}', [MotoristaController::class, 'atualizarMotorista'])->middleware(['auth', 'verified'])->name('motorista.atualizar');
 Route::get('/motorista/cadastro', [MotoristaController::class, 'cadastroMotorista'])->middleware(['auth', 'verified'])->name('motorista.cadastro');
 Route::post('/motorista', [MotoristaController::class, 'cadastrar'])->middleware(['auth', 'verified'])->name('motorista.cadastrar');
 
@@ -44,6 +40,9 @@ Route::get('/estacionamento', [ControleEstacionamentoController::class, 'index']
 Route::get('/estacionamento/cadastro', [ControleEstacionamentoController::class, 'cadastroEstacionamento'])->middleware(['auth', 'verified'])->name('estacionamento.cadastro');
 Route::post('/estacionamento', [ControleEstacionamentoController::class, 'cadastrar'])->middleware(['auth', 'verified'])->name('estacionamento.cadastrar');
 Route::put('/estacionamento/saida/{id}', [ControleEstacionamentoController::class, 'registrarSaida'])->middleware(['auth', 'verified'])->name('estacionamento.saida');
+
+Route::get('/relatorio/motoristas/pdf', [RelatorioController::class, 'motoristasPDF'])->name('relatorio.motoristas.pdf');
+Route::get('/relatorio/movimentacoes/pdf', [RelatorioController::class, 'movimentacoesPDF'])->name('relatorio.movimentacoes.pdf');
 
 // Rota para gerar cupom
 Route::get('/cupom/{id}', [CupomController::class, 'gerarCupom'])->middleware(['auth', 'verified'])->name('cupom.gerar');

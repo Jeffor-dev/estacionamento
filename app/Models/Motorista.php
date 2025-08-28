@@ -13,6 +13,8 @@ class Motorista extends Model
         'nome',
         'cpf',
         'telefone',
+        'empresa',
+        'observacao',
         'caminhao_id'
     ];
 

@@ -38,7 +38,7 @@
       <template v-slot:body="props">
         <q-tr :props="props"
           class="cursor-pointer"
-          @click="visualizar(props.row.gid)">
+          @click="visualizar(props.row.id)">
 
           <q-td key="id" :props="props">
             {{ props.row.id }}

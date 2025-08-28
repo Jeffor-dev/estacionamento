@@ -156,8 +156,7 @@ class ControleEstacionamentoController extends Controller
             }
             
             // Valor por hora (pode ser configurável no futuro)
-            $valorPorHora = 10.00;
-            $valorTotal = $horas * $valorPorHora;
+            $valorTotal = $estacionamento->valor_pagamento; 
             
             // Registrar a saída com horário atual e valor calculado
             $estacionamento->update([

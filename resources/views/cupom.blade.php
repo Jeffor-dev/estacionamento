@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cupom de Estacionamento</title>
+    <title>Comprovante de Estacionamento</title>
     <style>
         @media print {
             body {
@@ -15,6 +15,15 @@
             }
             .logo {
                 width: 50px !important;
+            }
+            @page {
+                margin: 0;
+                size: auto;
+            }
+            /* Oculta cabeçalho, rodapé e paginação do navegador */
+            html, body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
         
@@ -136,7 +145,7 @@
     </style>
 </head>
 <body>
-    <div class="cupom">
+    <div class="cupom" style="margin-top: 40px;">
         <div class="header">
             <div class="header-content">
                 <img src="{{ asset('maguary.jpeg') }}" alt="Logo Maguary" class="logo">
@@ -160,8 +169,8 @@
         </div>
         
         <div class="info-linha">
-            <span class="info-label">CPF:</span>
-            <span>{{ $estacionamento->motorista->cpf }}</span>
+            <span class="info-label">Empresa:</span>
+            <span>{{ $estacionamento->motorista->empresa }}</span>
         </div>
         
         <div class="info-linha">
