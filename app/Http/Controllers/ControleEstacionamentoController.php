@@ -40,7 +40,14 @@ class ControleEstacionamentoController extends Controller
 
     public function cadastroEstacionamento()
     {
+        // Buscar IDs dos motoristas que estão atualmente estacionados (têm entrada sem saída)
+        $motoristasAtivos = Estacionamento::whereNull('saida')
+            ->pluck('motorista_id')
+            ->toArray();
+
+        // Buscar apenas motoristas que NÃO estão na lista de ativos
         $motoristas = Motorista::with('caminhao')
+            ->whereNotIn('id', $motoristasAtivos)
             ->get()
             ->map(function ($motorista) {
                 return [
@@ -50,7 +57,7 @@ class ControleEstacionamentoController extends Controller
                     'modelo' => $motorista->caminhao->modelo ?? 'N/A',
                     'placa' => $motorista->caminhao->placa ?? 'N/A',
                     'cor' => $motorista->caminhao->cor ?? 'N/A',
-                    'label' => 'Motorista: ' . $motorista->nome . ' - ' . 'Placa: ' . ($motorista->caminhao->placa ?? 'N/A') . ' - ' . 'Caminhão: ' . ($motorista->caminhao->modelo ?? 'N/A') . ' '. ($motorista->caminhao->cor ?? 'N/A')   ,
+                    'label' => 'Placa: ' . ($motorista->caminhao->placa ?? 'N/A') . ' - ' . 'Caminhão: ' . ($motorista->caminhao->modelo ?? 'N/A') . ' '. ($motorista->caminhao->cor ?? 'N/A')   ,
                 ];
             });
 
@@ -65,19 +72,27 @@ class ControleEstacionamentoController extends Controller
         $request->validate([
             'motorista' => 'required',
             'pagamento' => 'required|string|max:20',
+            'tipoVeiculo' => 'required|in:truck_ls,bitrem',
             'valorPagamento' => 'required|numeric|min:0',
         ]);
+
+        // Verificar se o motorista já está ativo no estacionamento
+        $motoristaAtivo = Estacionamento::where('motorista_id', $request->motorista)
+            ->whereNull('saida')
+            ->exists();
+
+        if ($motoristaAtivo) {
+            return back()->withErrors(['motorista' => 'Este motorista já está registrado no estacionamento.']);
+        }
 
         $registro = Estacionamento::create([
             'motorista_id' => $request->motorista,
             'entrada' => now('America/Sao_Paulo'),
             'saida' => null,
             'tipo_pagamento' => $request->pagamento,
+            'tipo_veiculo' => $request->tipoVeiculo,
             'valor_pagamento' => $request->valorPagamento,
         ]);
-
-        // Aqui você pode adicionar a lógica para registrar a entrada no estacionamento
-        // Exemplo: Estacionamento::create([...]);
 
         return redirect()->route('estacionamento.index')->with('success', 'Entrada registrada com sucesso!');
     }

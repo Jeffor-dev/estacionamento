@@ -40,6 +40,7 @@ class MotoristaController extends Controller
             'id' => $motorista->id,
             'nome' => $motorista->nome,
             'cpf' => $motorista->cpf,
+            'tipo_documento' => $motorista->tipo_documento ?? 'CPF',
             'telefone' => $motorista->telefone,
             'empresa' => $motorista->empresa,
             'observacao' => $motorista->observacao,
@@ -58,6 +59,7 @@ class MotoristaController extends Controller
         $motorista = Motorista::findOrFail($id);
         $motorista->nome = request('nome');
         $motorista->cpf = request('cpf');
+        $motorista->tipo_documento = request('tipoDocumento', 'CPF');
         $motorista->telefone = request('telefone');
         $motorista->empresa = request('empresa');
         $motorista->observacao = request('observacao');
@@ -77,7 +79,8 @@ class MotoristaController extends Controller
     {
         $request->validate([
             'nome' => 'required|string|max:255',
-            'cpf' => 'required|string|max:14',
+            'cpf' => 'required|string|max:18', // Aumentado para aceitar CNPJ
+            'tipoDocumento' => 'required|in:CPF,CNPJ',
             'telefone' => 'required|string|max:15',
             'observacao' => 'nullable|string|max:500',
             'empresa' => 'nullable|string|max:255',
@@ -95,6 +98,7 @@ class MotoristaController extends Controller
         $motorista = Motorista::create([
             'nome' => strtoupper($request->nome),
             'cpf' => $request->cpf,
+            'tipo_documento' => $request->tipoDocumento,
             'telefone' => $request->telefone,
             'observacao' => strtoupper($request->observacao),
             'empresa' => strtoupper($request->empresa),

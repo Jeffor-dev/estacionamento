@@ -12,6 +12,7 @@ class Motorista extends Model
     protected $fillable = [
         'nome',
         'cpf',
+        'tipo_documento',
         'telefone',
         'empresa',
         'observacao',

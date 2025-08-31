@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comprovante de Estacionamento</title>
+    <title>Comprovante de Pernoite</title>
     <style>
         @media print {
             body {
@@ -29,17 +29,17 @@
         
         body {
             font-family: 'Courier New', monospace;
-            max-width: 400px;
+            max-width: 280px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 15px;
             background: #f5f5f5;
         }
         
         .cupom {
             background: white;
-            padding: 20px;
+            padding: 15px;
             border: 2px dashed #333;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .header {
@@ -57,7 +57,7 @@
         }
         
         .logo {
-            width: 60px;
+            width: 45px;
             height: auto;
             border-radius: 4px;
         }
@@ -68,13 +68,13 @@
         }
         
         .empresa {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             margin-bottom: 5px;
         }
         
         .subtitulo {
-            font-size: 12px;
+            font-size: 11px;
             margin-bottom: 10px;
         }
         
@@ -89,8 +89,8 @@
         .info-linha {
             display: flex;
             justify-content: space-between;
-            margin: 8px 0;
-            font-size: 12px;
+            margin: 6px 0;
+            font-size: 11px;
         }
         
         .info-label {
@@ -99,19 +99,19 @@
         
         .valor-total {
             text-align: center;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             border: 1px solid #333;
-            padding: 10px;
-            margin: 15px 0;
+            padding: 8px;
+            margin: 12px 0;
         }
         
         .footer {
             text-align: center;
-            font-size: 10px;
+            font-size: 9px;
             border-top: 1px solid #333;
-            padding-top: 10px;
-            margin-top: 15px;
+            padding-top: 8px;
+            margin-top: 12px;
         }
         
         .botoes {
@@ -151,9 +151,9 @@
                 <img src="{{ asset('maguary.jpeg') }}" alt="Logo Maguary" class="logo">
                 <div class="empresa-info">
                     <div class="empresa">MAGUARY AUTO POSTO</div>
-                    <div class="subtitulo">COMPROVANTE DE ESTACIONAMENTO</div>
+                    <div class="subtitulo">COMPROVANTE DE PERNOITE</div>
                 </div>
-                <div style="width: 60px;"></div> <!-- Espaçador para centralizar -->
+                <div style="width: 45px;"></div> <!-- Espaçador para centralizar -->
             </div>
             <div class="ticket-numero">TICKET: {{ $numeroTicket }}</div>
         </div>
@@ -166,6 +166,11 @@
         <div class="info-linha">
             <span class="info-label">Motorista:</span>
             <span>{{ $estacionamento->motorista->nome }}</span>
+        </div>
+        
+        <div class="info-linha">
+            <span class="info-label">{{ $estacionamento->motorista->tipo_documento === 'cnpj' ? 'CNPJ:' : 'CPF:' }}</span>
+            <span>{{ $estacionamento->motorista->cpf }}</span>
         </div>
         
         <div class="info-linha">
@@ -186,16 +191,6 @@
         <div class="info-linha">
             <span class="info-label">Entrada:</span>
             <span>{{ \Carbon\Carbon::parse($estacionamento->entrada)->format('d/m/Y H:i') }}</span>
-        </div>
-        
-        <div class="info-linha">
-            <span class="info-label">Saída:</span>
-            <span>{{ \Carbon\Carbon::parse($estacionamento->saida)->format('d/m/Y H:i') }}</span>
-        </div>
-        
-        <div class="info-linha">
-            <span class="info-label">Duração:</span>
-            <span>{{ $duracaoFormatada }}</span>
         </div>
         
         <div class="valor-total">

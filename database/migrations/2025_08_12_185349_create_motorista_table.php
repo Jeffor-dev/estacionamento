@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('nome');
             $table->string('cpf')->unique();
             $table->string('telefone');
-            $table->string('empresa');
-            $table->string('observacao');
+            $table->string('empresa')->nullable();
+            $table->string('observacao')->nullable();
             $table->unsignedBigInteger('caminhao_id')->nullable();
         });
     }

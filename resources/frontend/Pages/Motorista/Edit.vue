@@ -12,8 +12,23 @@
             <div class="col-6">
               <q-input filled v-model="motorista.nome" label="Nome"/>
             </div>
+            <div class="col-3">
+              <q-select
+                filled
+                v-model="tipoDocumento"
+                label="Tipo de Documento"
+                :options="tiposDocumento"
+                @update:model-value="limparDocumento"
+              />
+            </div>
             <div class="col">
-              <q-input filled v-model="motorista.cpf" label="CPF" mask="###.###.###-##"/>
+              <q-input 
+                filled 
+                v-model="motorista.cpf" 
+                :label="tipoDocumento === 'CPF' ? 'CPF' : 'CNPJ'"
+                :mask="tipoDocumento === 'CPF' ? '###.###.###-##' : '##.###.###/####-##'"
+                :placeholder="tipoDocumento === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'"
+              />
             </div>
           </div>
           <q-input class="tw-my-5" filled v-model="motorista.telefone" label="Telefone" mask="(##) #####-####"/>
@@ -75,6 +90,80 @@ const props = defineProps({
 
 const motorista = ref({ ...props.motorista })
 
+// Controle do tipo de documento
+const tipoDocumento = ref(props.motorista.tipo_documento || 'CPF')
+const tiposDocumento = ['CPF', 'CNPJ']
+
+// Função para limpar o campo documento quando trocar o tipo
+const limparDocumento = () => {
+  motorista.value.cpf = ''
+}
+
+// Função para validar CPF
+const validarCPF = (cpf) => {
+  cpf = cpf.replace(/[^\d]/g, '')
+  if (cpf.length !== 11) return false
+  
+  // Verifica se todos os dígitos são iguais
+  if (/^(\d)\1{10}$/.test(cpf)) return false
+  
+  // Validação do CPF
+  let soma = 0
+  for (let i = 0; i < 9; i++) {
+    soma += parseInt(cpf.charAt(i)) * (10 - i)
+  }
+  let resto = 11 - (soma % 11)
+  let digito1 = resto < 2 ? 0 : resto
+  
+  if (parseInt(cpf.charAt(9)) !== digito1) return false
+  
+  soma = 0
+  for (let i = 0; i < 10; i++) {
+    soma += parseInt(cpf.charAt(i)) * (11 - i)
+  }
+  resto = 11 - (soma % 11)
+  let digito2 = resto < 2 ? 0 : resto
+  
+  return parseInt(cpf.charAt(10)) === digito2
+}
+
+// Função para validar CNPJ
+const validarCNPJ = (cnpj) => {
+  cnpj = cnpj.replace(/[^\d]/g, '')
+  if (cnpj.length !== 14) return false
+  
+  // Verifica se todos os dígitos são iguais
+  if (/^(\d)\1{13}$/.test(cnpj)) return false
+  
+  // Validação do CNPJ
+  let tamanho = cnpj.length - 2
+  let numeros = cnpj.substring(0, tamanho)
+  let digitos = cnpj.substring(tamanho)
+  let soma = 0
+  let pos = tamanho - 7
+  
+  for (let i = tamanho; i >= 1; i--) {
+    soma += numeros.charAt(tamanho - i) * pos--
+    if (pos < 2) pos = 9
+  }
+  
+  let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11)
+  if (resultado !== parseInt(digitos.charAt(0))) return false
+  
+  tamanho = tamanho + 1
+  numeros = cnpj.substring(0, tamanho)
+  soma = 0
+  pos = tamanho - 7
+  
+  for (let i = tamanho; i >= 1; i--) {
+    soma += numeros.charAt(tamanho - i) * pos--
+    if (pos < 2) pos = 9
+  }
+  
+  resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11)
+  return resultado === parseInt(digitos.charAt(1))
+}
+
 const coresOriginais = [
   'AMARELO',
   'AZUL',
@@ -131,6 +220,25 @@ function filtrarModelos(val, update) {
 }
 
 const salvarMotorista = () => {
-    router.put(route('motorista.atualizar', motorista.value.id), motorista.value)
+  // Validar documento conforme o tipo selecionado
+  if (tipoDocumento.value === 'CPF') {
+    if (!validarCPF(motorista.value.cpf)) {
+      alert('CPF inválido. Verifique os dados digitados.')
+      return
+    }
+  } else if (tipoDocumento.value === 'CNPJ') {
+    if (!validarCNPJ(motorista.value.cpf)) {
+      alert('CNPJ inválido. Verifique os dados digitados.')
+      return
+    }
+  }
+
+  // Adicionar o tipo de documento aos dados enviados
+  const dadosMotorista = {
+    ...motorista.value,
+    tipoDocumento: tipoDocumento.value
+  }
+
+  router.put(route('motorista.atualizar', motorista.value.id), dadosMotorista)
 }
 </script>

@@ -14,6 +14,7 @@ class Estacionamento extends Model
         'entrada',
         'saida',
         'tipo_pagamento',
+        'tipo_veiculo',
         'valor_pagamento',
         'valor',
     ];

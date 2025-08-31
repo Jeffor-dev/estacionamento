@@ -5,7 +5,7 @@
     <div class="q-pa-md">
       <div class="q-gutter-md row bg-grey-2 tw-pb-4 tw-mb-5">
            <q-btn color="secondary" label="Registrar Entrada" :href="route('estacionamento.cadastro')"/>
-           <q-btn color="warning" label="Exportar PDF" :href="route('motorista.cadastro')"/>
+           <q-btn color="warning" label="Exportar PDF" @click="exportarMovimentacoesPDF"/>
       </div>
       <div class="row items-center tw-mb-4">
         <q-radio v-model="statusFiltro" val="ativo" label="Ativos" color="green" />
@@ -126,10 +126,12 @@
   import axios from 'axios'
   import { debounce } from 'lodash';
   import { useQuasar } from 'quasar'
+  import { jsPDF } from 'jspdf'
+  import autoTable from 'jspdf-autotable'
 
   const $q = useQuasar()
 
-  defineProps({
+  const props = defineProps({
     title: String
   })
 
@@ -278,5 +280,54 @@
   function gerarCupom(id) {
     // Abrir cupom em nova aba
     window.open(route('cupom.gerar', id), '_blank')
+  }
+
+  async function exportarMovimentacoesPDF() {
+    const { data } = await axios.get('/api/relatorio/movimentacoes')
+    const doc = new jsPDF()
+    
+    doc.text('Movimentações do Dia', 14, 16)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    
+    // Passar o doc como primeiro parâmetro
+    autoTable(doc, {
+      head: [['ID', 'Motorista', 'Placa', 'Modelo', 'Cor', 'Entrada', 'Saída', 'Valor']],
+      body: data.movimentacoes.map(m => [
+        m.id, m.motorista, m.placa, m.modelo, m.cor, m.entrada, m.saida, m.valor
+      ]),
+      startY: 22,
+        styles: {
+        font: 'helvetica',        // Fonte para toda a tabela
+        fontStyle: 'normal',      // normal, bold, italic, bolditalic
+        fontSize: 9,              // Tamanho da fonte
+        cellPadding: 3,
+        textColor: [0, 0, 0],     // Cor do texto [R, G, B]
+        lineColor: [200, 200, 200], // Cor das linhas
+        lineWidth: 0.1
+      },
+      headStyles: {
+        font: 'helvetica',
+        fontStyle: 'bold',        // Cabeçalho em negrito
+        fontSize: 10,             // Fonte maior no cabeçalho
+        fillColor: [52, 152, 219], // Cor de fundo
+        textColor: [255, 255, 255], // Texto branco
+        halign: 'center'          // Centralizar texto
+      },
+      bodyStyles: {
+        font: 'helvetica',
+        fontStyle: 'normal',
+        fontSize: 8,
+        textColor: [50, 50, 50]
+      },
+      
+      // Estilos para linhas alternadas
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+        font: 'helvetica'
+      },
+    })
+    
+    doc.save('movimentacoes_do_dia.pdf')
   }
 </script>

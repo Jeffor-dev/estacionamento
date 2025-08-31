@@ -38,15 +38,10 @@
           <template #icon>
             <i-mdi-account-outline />
           </template>
-          My Account
+          Configurar
         </NavLink>
         <q-separator spaced />
-        <q-toggle
-          v-model="dark"
-          color="deep-purple-4"
-        >
-          <span class="tw-opacity-60">Dark Mode</span>
-        </q-toggle>
+
         <q-separator spaced />
         <NavLink
           :href="route('logout')"
@@ -56,7 +51,7 @@
           <template #icon>
             <i-mdi-power-standby />
           </template>
-          Logout
+          Sair
         </NavLink>
       </NavList>
     </q-menu>

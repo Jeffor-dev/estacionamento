@@ -49,6 +49,12 @@
           <q-td key="cpf" :props="props">
             {{ props.row.cpf }}
           </q-td>
+          <q-td key="tipo_documento" :props="props">
+            <q-badge 
+              :color="props.row.tipo_documento === 'CPF' ? 'blue' : 'green'" 
+              :label="props.row.tipo_documento || 'CPF'"
+            />
+          </q-td>
           <q-td key="caminhao-placa" :props="props">
             {{ props.row.caminhao?.placa || 'N/A' }}
           </q-td>
@@ -102,7 +108,8 @@
     const baseColumns = [
       { name: 'id', required: true, label: 'ID', align: 'left', field: row => row.id, format: val => `${val}`, sortable: true, style: 'width: 80px' },
       { name: 'nome', align: 'left', label: 'Nome', field: 'nome' },
-      { name: 'cpf', align: 'left', label: 'CPF', field: 'cpf' },
+      { name: 'cpf', align: 'left', label: 'CPF/CNPJ', field: 'cpf' },
+      { name: 'tipo_documento', align: 'center', label: 'Tipo', field: 'tipo_documento', style: 'width: 80px' },
       { name: 'caminhao-placa', align: 'left', label: 'Caminhão Placa', field: row => row.caminhao?.placa || '' },
       { name: 'caminhao-modelo', align: 'right', label: 'Caminhão Modelo', field: row => row.caminhao?.modelo || '' },
       { name: 'caminhao-cor', align: 'right', label: 'Caminhão Cor', field: row => row.caminhao?.cor || '' },

@@ -11,10 +11,13 @@ export const useAppShell = defineStore('app-shell', () => {
   }
 
   const defaultSettings = {
-    isDark: (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    isDark: false // Sempre inicia com tema claro
   }
 
   const currentSettings = useStorage(storageKey.value, defaultSettings)
+  
+  // Força tema claro sempre (ignora localStorage)
+  currentSettings.value.isDark = false
 
   const setDarkMode = (value = null) => {
     if (value === null) {
