@@ -42,7 +42,7 @@
         <q-card-section>
           <div class="row tw-gap-3 flex tw-my-5">
             <div class="col">
-              <q-input filled v-model="motorista.placa" label="Placa" mask="AAA-#A##" />
+              <q-input filled v-model="motorista.placa" label="Placa" />
             </div>
             <div class="col">
               <q-select
@@ -251,18 +251,7 @@ function filtrarModelos(val, update) {
 }
 
 const salvarMotorista = () => {
-  // Validar documento conforme o tipo selecionado
-  if (tipoDocumento.value === 'CPF') {
-    if (!validarCPF(motorista.value.cpf)) {
-      alert('CPF inválido. Verifique os dados digitados.')
-      return
-    }
-  } else if (tipoDocumento.value === 'CNPJ') {
-    if (!validarCNPJ(motorista.value.cpf)) {
-      alert('CNPJ inválido. Verifique os dados digitados.')
-      return
-    }
-  }
+
 
   // Adicionar o tipo de documento aos dados enviados
   const dadosMotorista = {
