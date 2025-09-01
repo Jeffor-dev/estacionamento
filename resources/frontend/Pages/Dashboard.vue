@@ -20,7 +20,7 @@
       </div>
 
       <!-- Card Lucro do Mês -->
-      <div class="col-12 col-md-6 col-lg-3">
+      <!-- <div class="col-12 col-md-6 col-lg-3">
         <q-card class="text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
           <q-card-section>
             <div class="text-h6">Lucro do Mês</div>
@@ -28,10 +28,10 @@
             <div class="text-subtitle2">{{ new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) }}</div>
           </q-card-section>
         </q-card>
-      </div>
+      </div> -->
 
       <!-- Card Lucro Total -->
-      <div class="col-12 col-md-6 col-lg-3">
+      <!-- <div class="col-12 col-md-6 col-lg-3">
         <q-card class="text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
           <q-card-section>
             <div class="text-h6">Lucro Total</div>
@@ -39,7 +39,7 @@
             <div class="text-subtitle2">Desde o início</div>
           </q-card-section>
         </q-card>
-      </div>
+      </div> -->
 
       <!-- Card Motoristas -->
       <div class="col-12 col-md-6 col-lg-3">
@@ -101,7 +101,7 @@
 
       <!-- Gráfico de Tipos de Pagamento -->
       <div class="col-12 col-md-6">
-        <q-card>
+        <q-card>]
           <q-card-section>
             <div class="text-h6 q-mb-md">Tipos de Pagamento</div>
             <div style="height: 200px;">
