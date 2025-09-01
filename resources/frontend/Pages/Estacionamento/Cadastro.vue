@@ -79,6 +79,8 @@
 <script setup>
   import { router } from '@inertiajs/vue3'
 
+  const $q = useQuasar()
+
   const props = defineProps({
     title: String,
     motoristas: Array
@@ -150,7 +152,44 @@
     }
 
     form.value.motorista = form.value.motorista.id
-    router.post(route('estacionamento.cadastrar'), form.value)
+    confirmarEntrada()
+    
+  }
+
+    function confirmarEntrada() {
+
+    router.put(route('estacionamento.saida', form.value.motorista), {}, {
+      onSuccess: (page) => {
+        // Sucesso - fechar modal e atualizar tabela
+        const id = registroSelecionado.value
+        tableRef.value.requestServerInteraction()
+        // Mostrar notificação de sucesso (usando Quasar Notify)
+        $q.notify({
+          type: 'positive',
+          message: `Entrada registrada com sucesso!`,
+          position: 'top'
+        })
+        setTimeout(() => {
+          gerarCupom(id)
+        }, 1000)
+      },
+      onError: (errors) => {
+        // Erro - mostrar notificação de erro
+        
+        $q.notify({
+          type: 'negative',
+          message: 'Erro ao registrar saída. Tente novamente.',
+          icon: 'report_problem',
+          position: 'top'
+        })
+        
+        console.error('Erro ao registrar saída:', errors)
+      },
+      onFinish: () => {
+        // Sempre executado no final
+        router.post(route('estacionamento.cadastrar'), form.value)
+      }
+    })
   }
 
 </script>

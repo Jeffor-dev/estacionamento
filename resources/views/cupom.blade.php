@@ -169,7 +169,7 @@
         </div>
         
         <div class="info-linha">
-            <span class="info-label">{{ $estacionamento->motorista->tipo_documento === 'cnpj' ? 'CNPJ:' : 'CPF:' }}</span>
+            <span class="info-label">{{ $estacionamento->motorista->tipo_documento === 'CNPJ' ? 'CNPJ:' : 'CPF:' }}</span>
             <span>{{ $estacionamento->motorista->cpf }}</span>
         </div>
         
