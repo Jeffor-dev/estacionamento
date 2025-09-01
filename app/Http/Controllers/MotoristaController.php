@@ -67,7 +67,7 @@ class MotoristaController extends Controller
 
         // Atualiza caminhão
         if ($motorista->caminhao) {
-            $motorista->caminhao->placa = request('placa');
+            $motorista->caminhao->placa = strtoupper(request('placa'));
             $motorista->caminhao->modelo = request('modelo');
             $motorista->caminhao->cor = request('cor');
             $motorista->caminhao->save();
@@ -90,7 +90,7 @@ class MotoristaController extends Controller
         ]);
 
         $caminhao = Caminhao::create([
-            'placa' => $request->placa,
+            'placa' => strtoupper($request->placa),
             'modelo' => $request->modelo,
             'cor' => $request->cor,
         ]);
