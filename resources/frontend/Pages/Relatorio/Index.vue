@@ -96,11 +96,14 @@ async function exportarMovimentacoesPDF() {
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
   
+  // Usar o valor total calculado pelo controller
+  const valorTotal = data.valor_total_formatado
+  
   // Passar o doc como primeiro parâmetro
   autoTable(doc, {
-    head: [['ID', 'Motorista', 'Placa', 'Modelo', 'Cor', 'Entrada', 'Saída', 'Valor']],
+    head: [['ID', 'Motorista', 'Modelo', 'Placa', 'Entrada', 'Valor', 'Pagamento']],
     body: data.movimentacoes.map(m => [
-      m.id, m.motorista, m.placa, m.modelo, m.cor, m.entrada, m.saida, m.valor
+      m.id, m.motorista, m.modelo, m.placa, m.entrada, m.valor, m.tipo_pagamento
     ]),
     startY: 22,
       styles: {
@@ -132,6 +135,34 @@ async function exportarMovimentacoesPDF() {
       fillColor: [245, 245, 245],
       font: 'helvetica'
     },
+  })
+  
+  // Adicionar linha de total como uma segunda tabela para manter o estilo
+  autoTable(doc, {
+    body: [['', '', '', '', 'TOTAL:', valorTotal, '']],
+    startY: doc.lastAutoTable.finalY,
+    styles: {
+      font: 'helvetica',
+      fontStyle: 'bold',
+      fontSize: 10,
+      cellPadding: 3,
+      textColor: [0, 0, 0], // Preto por padrão
+      lineColor: [200, 200, 200],
+      lineWidth: 0.1,
+      fillColor: [240, 240, 240], // Fundo cinza claro para destacar
+      halign: 'center'
+    },
+    columnStyles: {
+      4: { 
+        halign: 'right',
+        textColor: [128, 128, 128] // Cinza para "TOTAL:"
+      }, 
+      5: { 
+        halign: 'center', 
+        fontStyle: 'bold',
+        textColor: [0, 0, 0] // Preto para o valor
+      }
+    }
   })
   
   doc.save('movimentacoes_do_dia.pdf')

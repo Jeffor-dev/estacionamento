@@ -17,12 +17,11 @@
             <tr>
                 <th>ID</th>
                 <th>Motorista</th>
-                <th>Placa</th>
                 <th>Modelo</th>
-                <th>Cor</th>
+                <th>Placa</th>
                 <th>Entrada</th>
-                <th>Saída</th>
                 <th>Valor</th>
+                <th>Pagamento</th>
             </tr>
         </thead>
         <tbody>
@@ -30,15 +29,18 @@
             <tr>
                 <td>{{ $mov->id }}</td>
                 <td>{{ $mov->motorista->nome ?? '' }}</td>
-                <td>{{ $mov->motorista->caminhao->placa ?? '' }}</td>
                 <td>{{ $mov->motorista->caminhao->modelo ?? '' }}</td>
-                <td>{{ $mov->motorista->caminhao->cor ?? '' }}</td>
+                <td>{{ $mov->motorista->caminhao->placa ?? '' }}</td>
                 <td>{{ $mov->entrada ? date('d/m/Y H:i', strtotime($mov->entrada)) : '' }}</td>
-                <td>{{ $mov->saida ? date('d/m/Y H:i', strtotime($mov->saida)) : '' }}</td>
                 <td>{{ $mov->valor ? 'R$ ' . number_format($mov->valor, 2, ',', '.') : '-' }}</td>
+                <td>{{ $mov->tipo_pagamento ?? '-' }}</td>
             </tr>
             @endforeach
         </tbody>
     </table>
+    
+    <div style="margin-top: 20px; text-align: right; font-size: 18px; font-weight: bold;">
+        <strong>VALOR TOTAL DO DIA: R$ {{ number_format($movimentacoes->sum('valor'), 2, ',', '.') }}</strong>
+    </div>
 </body>
 </html>

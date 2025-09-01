@@ -69,19 +69,46 @@
               />
             </div>
           </div>
-          <q-card-actions class="justify-end" >
-            <q-btn label="Voltar" color="warning" :href="route('motorista.index')" />
-            <q-btn label="Salvar" color="secondary" @click="salvarMotorista" />
+          <q-card-actions class="justify-between" >
+            <q-btn label="Excluir" color="negative" @click="confirmarExclusao" />
+            <div class="q-gutter-sm">
+              <q-btn label="Voltar" color="warning" :href="route('motorista.index')" />
+              <q-btn label="Salvar" color="secondary" @click="salvarMotorista" />
+            </div>
           </q-card-actions>
         </q-card-section>
       </q-card>
     </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <q-dialog v-model="modalConfirmacao" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <i-mdi-alert class="q-mr-sm" />
+          <span class="q-ml-sm">Confirmar Exclusão</span>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          Tem certeza que deseja excluir o motorista <strong>{{ motorista.nome }}</strong>?
+          <br><br>
+          <span class="text-negative">Esta ação não pode ser desfeita!</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="primary" @click="modalConfirmacao = false" />
+          <q-btn flat label="Excluir" color="negative" @click="excluirMotorista" :loading="processandoExclusao" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { useQuasar } from 'quasar'
+
+const $q = useQuasar()
 
 const props = defineProps({
   motorista: Object,
@@ -89,6 +116,10 @@ const props = defineProps({
 })
 
 const motorista = ref({ ...props.motorista })
+
+// Estados para modal de exclusão
+const modalConfirmacao = ref(false)
+const processandoExclusao = ref(false)
 
 // Controle do tipo de documento
 const tipoDocumento = ref(props.motorista.tipo_documento || 'CPF')
@@ -240,5 +271,38 @@ const salvarMotorista = () => {
   }
 
   router.put(route('motorista.atualizar', motorista.value.id), dadosMotorista)
+}
+
+const confirmarExclusao = () => {
+  modalConfirmacao.value = true
+}
+
+const excluirMotorista = () => {
+  processandoExclusao.value = true
+  
+  router.delete(route('motorista.excluir', motorista.value.id), {
+    onSuccess: () => {
+      $q.notify({
+        type: 'positive',
+        message: 'Motorista excluído com sucesso!',
+        position: 'top'
+      })
+      // Redirect será automático pelo backend
+    },
+    onError: (errors) => {
+      processandoExclusao.value = false
+      $q.notify({
+        type: 'negative',
+        message: 'Erro ao excluir motorista. Tente novamente.',
+        icon: 'report_problem',
+        position: 'top'
+      })
+      console.error('Erro ao excluir motorista:', errors)
+    },
+    onFinish: () => {
+      processandoExclusao.value = false
+      modalConfirmacao.value = false
+    }
+  })
 }
 </script>

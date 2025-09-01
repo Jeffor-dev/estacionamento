@@ -33,6 +33,7 @@ Route::get('/motorista', [MotoristaController::class, 'index'])->middleware(['au
 Route::get('/motorista/cadastro', [MotoristaController::class, 'cadastroMotorista'])->middleware(['auth', 'verified'])->name('motorista.cadastro');
 Route::get('/motorista/{id}', [MotoristaController::class, 'editMotorista'])->middleware(['auth', 'verified'])->name('motorista.visualizar');
 Route::put('/motorista/{id}', [MotoristaController::class, 'atualizarMotorista'])->middleware(['auth', 'verified'])->name('motorista.atualizar');
+Route::delete('/motorista/{id}', [MotoristaController::class, 'excluirMotorista'])->middleware(['auth', 'verified'])->name('motorista.excluir');
 Route::post('/motorista', [MotoristaController::class, 'cadastrar'])->middleware(['auth', 'verified'])->name('motorista.cadastrar');
 
 Route::get('/relatorio', [RelatorioController::class, 'index'])->middleware(['auth', 'verified'])->name('relatorio.index');

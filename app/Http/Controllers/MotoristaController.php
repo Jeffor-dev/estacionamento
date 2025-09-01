@@ -161,6 +161,32 @@ class MotoristaController extends Controller
         return response()->json($ret);
     }
 
+    public function excluirMotorista($id)
+    {
+        try {
+            $motorista = Motorista::findOrFail($id);
+            
+            // Verificar se o motorista tem registros no estacionamento
+            $temRegistros = \App\Models\Estacionamento::where('motorista_id', $id)->exists();
+            
+            if ($temRegistros) {
+                return back()->withErrors(['error' => 'Não é possível excluir este motorista pois ele possui registros no estacionamento.']);
+            }
+            
+            // Excluir caminhão relacionado se existir
+            if ($motorista->caminhao) {
+                $motorista->caminhao->delete();
+            }
+            
+            // Excluir motorista
+            $motorista->delete();
+            
+            return redirect()->route('motorista.index')->with('success', 'Motorista excluído com sucesso!');
+            
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Erro ao excluir motorista: ' . $e->getMessage()]);
+        }
+    }
 }
 
 
