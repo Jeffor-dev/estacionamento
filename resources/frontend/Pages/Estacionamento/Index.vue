@@ -76,20 +76,17 @@
             <q-td key="caminhao-cor" :props="props">
               {{ props.row.caminhao?.cor || 'N/A' }}
             </q-td>
-            <q-td key="saida" :props="props">
-              {{ props.row.saida ? new Date(props.row.saida).toLocaleString('pt-BR') : 'Em aberto' }}
-            </q-td>
             <q-td key="valor" :props="props">
-              {{ props.row.valor ? `R$ ${props.row.valor}` : '-' }}
+              {{ props.row.valor_pagamento ? `R$ ${props.row.valor_pagamento}` : '-' }}
             </q-td>
             <q-td key="status" :props="props">
               <q-badge :color="props.row.status === 'ativo' ? 'green' : 'blue'" :label="props.row.status === 'ativo' ? 'Ativo' : 'Finalizado'" />
             </q-td>
             <q-td key="actions" :props="props">
               <div class="q-gutter-xs">
-                <q-btn v-if="props.row.status === 'ativo'" color="primary" size="sm" @click.stop="abrirModalConfirmacao(props.row.id, props.row.motorista)">
-                  <i-mdi-truck />
-                  <q-tooltip>Registrar Saída</q-tooltip>
+                <q-btn id="cupom" v-if="props.row.status === 'ativo'" color="primary" size="sm" @click.stop="abrirModalConfirmacao(props.row.id, props.row.motorista)">
+                  <i-mdi-printer />
+                  <q-tooltip>Gerar Cupom</q-tooltip>
                 </q-btn>
                 <q-btn v-if="props.row.status === 'finalizado'" color="primary" size="sm" @click.stop="gerarCupom(props.row.id)">
                   <i-mdi-printer />
@@ -176,10 +173,9 @@
       { name: 'caminhao-placa', align: 'left', label: 'Placa', field: row => row.caminhao?.placa || '' },
       { name: 'caminhao-modelo', align: 'center', label: 'Modelo', field: row => row.caminhao?.modelo || '' },
       { name: 'caminhao-cor', align: 'center', label: 'Cor', field: row => row.caminhao?.cor || '' },
-      { name: 'saida', align: 'center', label: 'Saída', field: 'saida' },
-      { name: 'valor', align: 'center', label: 'Valor', field: 'valor' },
+      { name: 'valor', align: 'center', label: 'Valor', field: 'valor_pagamento' },
       { name: 'status', align: 'center', label: 'Status', field: 'status' },
-      { name: 'actions', align: 'center', label: 'Ações', field: 'actions', sortable: false, style: 'width: 120px' }
+      { name: 'actions', align: 'center', label: 'Cupom', field: 'actions', sortable: false, style: 'width: 120px' }
     ]
 
     return baseColumns;

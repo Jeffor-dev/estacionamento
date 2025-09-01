@@ -137,7 +137,8 @@ class ControleEstacionamentoController extends Controller
                 'motorista' => $registro->motorista ? $registro->motorista->nome : 'N/A',
                 'entrada' => $registro->entrada,
                 'saida' => $registro->saida,
-                'valor' => $registro->valor,
+                'valor_pagamento' => $registro->valor_pagamento,
+                'tipo_pagamento' => $registro->tipo_pagamento,
                 'status' => $registro->saida ? 'finalizado' : 'ativo',
                 'caminhao' => [
                     'placa' => $registro->motorista->caminhao ? $registro->motorista->caminhao->placa : 'N/A',

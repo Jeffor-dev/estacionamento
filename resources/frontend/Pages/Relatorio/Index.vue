@@ -91,8 +91,14 @@ async function exportarMotoristasPDF() {
 async function exportarMovimentacoesPDF() {
   const { data } = await axios.get('/api/relatorio/movimentacoes')
   const doc = new jsPDF()
-  
-  doc.text('Movimentações do Dia', 14, 16)
+
+  let hoje = new Date().toLocaleDateString('pt-BR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+
+  doc.text('Movimentações do dia ' + hoje, 14, 16)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
   

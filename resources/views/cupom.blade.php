@@ -189,6 +189,11 @@
         </div>
         
         <div class="info-linha">
+            <span class="info-label">Tipo Veículo:</span>
+            <span>{{ $estacionamento->tipo_veiculo == 'truck_ls' ? 'Truck/LS' : 'Bitrem' }}</span>
+        </div>
+        
+        <div class="info-linha">
             <span class="info-label">Entrada:</span>
             <span>{{ \Carbon\Carbon::parse($estacionamento->entrada)->format('d/m/Y H:i') }}</span>
         </div>
