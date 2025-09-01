@@ -54,8 +54,8 @@ class ControleEstacionamentoController extends Controller
                 if ($proximaGratuidade === 0) {
                     $proximaGratuidade = 10;
                 }
-                $fidelidadeInfo = $proximaGratuidade == 1
-                    ? ' 🎉 PRÓXIMA ENTRADA GRATUITA!' 
+                $fidelidadeInfo = $motorista->temDireitoGratuidade()
+                    ? ' 🎉 ENTRADA GRATUITA!' 
                     : " (Faltam {$proximaGratuidade} para gratuidade)";
                 
                 return [
