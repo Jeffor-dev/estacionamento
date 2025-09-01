@@ -27,13 +27,15 @@ class Motorista extends Model
 
     public function temDireitoGratuidade()
     {
-        return $this->contador_entradas > 0 && $this->contador_entradas % 11 == 0;
+        return $this->contador_entradas == 10;
     }
 
     public function proximaGratuidadeEm()
     {
-        $proximo = 11 - ($this->contador_entradas % 10);
-        return $proximo == 10 ? 0 : $proximo;
+        if ($this->contador_entradas >= 10) {
+            return 0; // Próxima entrada será gratuita
+        }
+        return 10 - $this->contador_entradas;
     }
 
     public function incrementarContador()

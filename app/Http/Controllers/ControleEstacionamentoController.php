@@ -99,16 +99,16 @@ class ControleEstacionamentoController extends Controller
         // Buscar o motorista para verificar fidelidade
         $motorista = Motorista::findOrFail($request->motorista);
         
-        // Incrementar contador de entradas
-        $motorista->incrementarContador();
-        
-        // Verificar se tem direito à gratuidade (após incrementar)
+        // Verificar se tem direito à gratuidade (ANTES de incrementar)
         $isGratuito = $motorista->temDireitoGratuidade();
         $valorFinal = $isGratuito ? 0 : $request->valorPagamento;
 
         // Se for entrada gratuita, zerar o contador para recomeçar o ciclo
         if ($isGratuito) {
             $motorista->update(['contador_entradas' => 0]);
+        } else {
+            // Se não for gratuita, incrementar contador normalmente
+            $motorista->incrementarContador();
         }
 
         $registro = Estacionamento::create([
@@ -121,7 +121,7 @@ class ControleEstacionamentoController extends Controller
         ]);
 
         $mensagem = $isGratuito 
-            ? 'Entrada GRATUITA registrada! Parabéns pela 10ª entrada! Contador reiniciado.' 
+            ? 'Entrada GRATUITA registrada! Parabéns por completar 10 entradas! Contador reiniciado.' 
             : 'Entrada registrada com sucesso!';
 
         return redirect()->route('estacionamento.index')->with('success', $mensagem);
