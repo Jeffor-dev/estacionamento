@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('estacionamento', function (Blueprint $table) {
-            $table->dropColumn(['saida', 'valor']);
+        Schema::table('motorista', function (Blueprint $table) {
+            $table->integer('contador_entradas')->default(0)->after('tipo_documento');
         });
     }
 
@@ -21,9 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('estacionamento', function (Blueprint $table) {
-            $table->timestamp('saida')->nullable();
-            $table->decimal('valor', 8, 2)->nullable();
+        Schema::table('motorista', function (Blueprint $table) {
+            $table->dropColumn('contador_entradas');
         });
     }
 };

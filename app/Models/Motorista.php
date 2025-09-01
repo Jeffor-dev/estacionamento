@@ -16,11 +16,28 @@ class Motorista extends Model
         'telefone',
         'empresa',
         'observacao',
-        'caminhao_id'
+        'caminhao_id',
+        'contador_entradas'
     ];
 
     public function caminhao()
     {
         return $this->belongsTo(Caminhao::class, 'caminhao_id');
+    }
+
+    public function temDireitoGratuidade()
+    {
+        return $this->contador_entradas > 0 && $this->contador_entradas % 11 == 0;
+    }
+
+    public function proximaGratuidadeEm()
+    {
+        $proximo = 11 - ($this->contador_entradas % 10);
+        return $proximo == 10 ? 0 : $proximo;
+    }
+
+    public function incrementarContador()
+    {
+        $this->increment('contador_entradas');
     }
 }

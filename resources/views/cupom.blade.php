@@ -198,6 +198,27 @@
             <span>{{ \Carbon\Carbon::parse($estacionamento->entrada)->format('d/m/Y H:i') }}</span>
         </div>
         
+        <div class="info-linha">
+            <span class="info-label">Fidelidade:</span>
+            <span>{{ $estacionamento->motorista->contador_entradas }}/10 entradas</span>
+        </div>
+        
+        @if($estacionamento->tipo_pagamento === 'GRATUITO')
+        <div class="info-linha" style="background: #e8f5e8; padding: 5px; border: 1px solid #4caf50; margin: 5px 0;">
+            <span style="font-weight: bold; color: #2e7d32;">🎉 ENTRADA GRATUITA! 🎉</span>
+        </div>
+        @else
+            @php
+                $proximaGratuidade = 10 - ($estacionamento->motorista->contador_entradas % 10);
+                $proximaGratuidade = $proximaGratuidade == 10 ? 10 : $proximaGratuidade;
+            @endphp
+            @if($proximaGratuidade <= 3 && $proximaGratuidade > 0)
+            <div class="info-linha" style="background: #fff3cd; padding: 3px; border: 1px solid #ffc107; margin: 3px 0;">
+                <span style="font-size: 10px; color: #856404;">Faltam {{ $proximaGratuidade }} para entrada gratuita!</span>
+            </div>
+            @endif
+        @endif
+        
         <div class="valor-total">
             VALOR TOTAL: R$ {{ number_format($estacionamento->valor_pagamento, 2, ',', '.') }}
         </div>

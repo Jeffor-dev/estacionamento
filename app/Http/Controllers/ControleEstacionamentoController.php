@@ -50,6 +50,14 @@ class ControleEstacionamentoController extends Controller
             ->whereNotIn('id', $motoristasAtivos)
             ->get()
             ->map(function ($motorista) {
+                $proximaGratuidade = $motorista->proximaGratuidadeEm();
+                if ($proximaGratuidade === 0) {
+                    $proximaGratuidade = 10;
+                }
+                $fidelidadeInfo = $proximaGratuidade == 1
+                    ? ' 🎉 PRÓXIMA ENTRADA GRATUITA!' 
+                    : " (Faltam {$proximaGratuidade} para gratuidade)";
+                
                 return [
                     'id' => $motorista->id,
                     'nome' => $motorista->nome,
@@ -57,7 +65,10 @@ class ControleEstacionamentoController extends Controller
                     'modelo' => $motorista->caminhao->modelo ?? 'N/A',
                     'placa' => $motorista->caminhao->placa ?? 'N/A',
                     'cor' => $motorista->caminhao->cor ?? 'N/A',
-                    'label' => 'Placa: ' . ($motorista->caminhao->placa ?? 'N/A') . ' - ' . 'Caminhão: ' . ($motorista->caminhao->modelo ?? 'N/A') . ' '. ($motorista->caminhao->cor ?? 'N/A')   ,
+                    'contador_entradas' => $motorista->contador_entradas,
+                    'proxima_gratuidade' => $proximaGratuidade,
+                    'tem_direito_gratuidade' => $motorista->temDireitoGratuidade(),
+                    'label' => 'Placa: ' . ($motorista->caminhao->placa ?? 'N/A') . ' - ' . 'Caminhão: ' . ($motorista->caminhao->modelo ?? 'N/A') . ' '. ($motorista->caminhao->cor ?? 'N/A') . $fidelidadeInfo,
                 ];
             });
 
@@ -85,16 +96,35 @@ class ControleEstacionamentoController extends Controller
             return back()->withErrors(['motorista' => 'Este motorista já está registrado no estacionamento.']);
         }
 
+        // Buscar o motorista para verificar fidelidade
+        $motorista = Motorista::findOrFail($request->motorista);
+        
+        // Incrementar contador de entradas
+        $motorista->incrementarContador();
+        
+        // Verificar se tem direito à gratuidade (após incrementar)
+        $isGratuito = $motorista->temDireitoGratuidade();
+        $valorFinal = $isGratuito ? 0 : $request->valorPagamento;
+
+        // Se for entrada gratuita, zerar o contador para recomeçar o ciclo
+        if ($isGratuito) {
+            $motorista->update(['contador_entradas' => 0]);
+        }
+
         $registro = Estacionamento::create([
             'motorista_id' => $request->motorista,
             'entrada' => now('America/Sao_Paulo'),
             'saida' => null,
-            'tipo_pagamento' => $request->pagamento,
+            'tipo_pagamento' => $isGratuito ? 'GRATUITO' : $request->pagamento,
             'tipo_veiculo' => $request->tipoVeiculo,
-            'valor_pagamento' => $request->valorPagamento,
+            'valor_pagamento' => $valorFinal,
         ]);
 
-        return redirect()->route('estacionamento.index')->with('success', 'Entrada registrada com sucesso!');
+        $mensagem = $isGratuito 
+            ? 'Entrada GRATUITA registrada! Parabéns pela 10ª entrada! Contador reiniciado.' 
+            : 'Entrada registrada com sucesso!';
+
+        return redirect()->route('estacionamento.index')->with('success', $mensagem);
     }
 
     public function api(Request $request)

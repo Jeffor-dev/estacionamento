@@ -60,8 +60,23 @@
                 color="secondary"
                 inline
               />
-              <div class="tw-mt-2 tw-text-sm tw-text-gray-600">
-                Valor: <strong>R$ {{ form.valorPagamento.toFixed(2).replace('.', ',') }}</strong>
+              <div class="tw-mt-2 tw-text-sm">
+                <div v-if="motoristaSelecionado && motoristaSelecionado.tem_direito_gratuidade" 
+                     class="tw-bg-green-100 tw-border tw-border-green-400 tw-text-green-700 tw-px-3 tw-py-2 tw-rounded tw-mb-2">
+                  🎉 <strong>ENTRADA GRATUITA!</strong> 🎉<br>
+                  <span class="tw-text-xs">Parabéns! Esta é sua 10ª entrada!</span>
+                </div>
+                <div v-else-if="motoristaSelecionado && motoristaSelecionado.proxima_gratuidade <= 3 && motoristaSelecionado.proxima_gratuidade > 0"
+                     class="tw-bg-yellow-100 tw-border tw-border-yellow-400 tw-text-yellow-700 tw-px-3 tw-py-2 tw-rounded tw-mb-2 tw-text-xs">
+                  Faltam apenas {{ motoristaSelecionado.proxima_gratuidade }} entrada(s) para ganhar uma gratuita!
+                </div>
+                <div class="tw-text-gray-600">
+                  Valor: <strong v-if="motoristaSelecionado && motoristaSelecionado.tem_direito_gratuidade" class="tw-text-green-600">GRATUITO</strong>
+                  <strong v-else>R$ {{ form.valorPagamento.toFixed(2).replace('.', ',') }}</strong>
+                  <span v-if="motoristaSelecionado" class="tw-ml-2 tw-text-xs tw-text-gray-500">
+                    ({{ motoristaSelecionado.contador_entradas }}/10 entradas)
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -116,6 +131,12 @@
 
   // Estado para controlar a lista filtrada de motoristas
   const motoristasFiltered = ref([...props.motoristas])
+
+  // Computed para obter o motorista selecionado com suas informações
+  const motoristaSelecionado = computed(() => {
+    if (!form.value.motorista) return null
+    return props.motoristas.find(m => m.id === form.value.motorista)
+  })
 
   // Função para filtrar motoristas baseado na busca
   const filtrarMotoristas = (val, update) => {
