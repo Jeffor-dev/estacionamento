@@ -22,6 +22,14 @@ if not exist "package.json" (
     exit /b 1
 )
 
+:: Atualiza o código do repositório
+echo 🔄 Atualizando codigo do repositorio...
+git pull
+if %errorlevel% neq 0 (
+    echo ⚠️  Aviso: Nao foi possivel fazer git pull. Continuando...
+)
+echo.
+
 :: Verifica dependências do Node
 if not exist "node_modules" (
     echo 📦 Instalando dependencias do Node.js...
