@@ -8,8 +8,8 @@
            <q-btn color="warning" label="Exportar PDF" @click="exportarMovimentacoesPDF"/>
       </div>
       <div class="row items-center tw-mb-4">
-        <q-radio v-model="statusFiltro" val="ativo" label="Ativos" color="green" />
-        <q-radio v-model="statusFiltro" val="finalizado" label="Finalizados" color="blue" class="tw-ml-4" />
+        <q-radio v-model="statusFiltro" val="ativo" label="Gerar Tickets" color="green" />
+        <q-radio v-model="statusFiltro" val="finalizado" label="Pagos" color="blue" class="tw-ml-4" />
       </div>
     </div>
         <q-table 
@@ -87,7 +87,7 @@
             </q-td>
             <q-td key="actions" :props="props">
               <div class="q-gutter-xs">
-                <q-btn v-if="props.row.status === 'ativo'" color="negative" size="sm" @click.stop="abrirModalConfirmacao(props.row.id, props.row.motorista)">
+                <q-btn v-if="props.row.status === 'ativo'" color="primary" size="sm" @click.stop="abrirModalConfirmacao(props.row.id, props.row.motorista)">
                   <i-mdi-truck />
                   <q-tooltip>Registrar Saída</q-tooltip>
                 </q-btn>
@@ -106,11 +106,11 @@
       <q-card>
         <q-card-section class="row items-center">
           <i-mdi-warning class="q-mr-sm" />
-          <span class="q-ml-sm">Confirmar Saída</span>
+          <span class="q-ml-sm">Confirmar Geração de Cupom</span>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          Tem certeza que deseja registrar a saída do motorista <strong>{{ motoristaSelecionado }}</strong>?
+          Gerar cupom para <strong>{{ motoristaSelecionado }}</strong>?
         </q-card-section>
 
         <q-card-actions align="right">
@@ -250,7 +250,7 @@
         // Mostrar notificação de sucesso (usando Quasar Notify)
         $q.notify({
           type: 'positive',
-          message: `Saída registrada com sucesso!`,
+          message: `Cupom gerado com sucesso!`,
           position: 'top'
         })
         setTimeout(() => {
@@ -263,12 +263,12 @@
         
         $q.notify({
           type: 'negative',
-          message: 'Erro ao registrar saída. Tente novamente.',
+          message: 'Erro ao gerar cupom. Tente novamente.',
           icon: 'report_problem',
           position: 'top'
         })
-        
-        console.error('Erro ao registrar saída:', errors)
+
+        console.error('Erro ao gerar cupom:', errors)
       },
       onFinish: () => {
         // Sempre executado no final

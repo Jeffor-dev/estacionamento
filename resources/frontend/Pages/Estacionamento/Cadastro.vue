@@ -152,7 +152,7 @@
     }
 
     form.value.motorista = form.value.motorista.id
-    confirmarEntrada()
+    router.post(route('estacionamento.cadastrar'), form.value)
     
   }
 
