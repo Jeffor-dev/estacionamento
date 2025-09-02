@@ -10,13 +10,44 @@
       <q-card>
         <q-card-section>
           <div class="text-h6 tw-mb-4">Relatórios PDF</div>
+          
+          <!-- Filtro de Data -->
+          <div class="tw-mb-4">
+            <q-input
+              filled
+              v-model="dataSelecionada"
+              mask="##/##/####"
+              label="Data para Relatório"
+              hint="Selecione a data para filtrar as movimentações"
+              style="max-width: 300px"
+            >
+              <template v-slot:append>
+                <q-btn
+                  flat
+                  round
+                  dense
+                  class="cursor-pointer"
+                >
+                  <i-mdi-calendar style="height: 32px; width: 32px;"/>
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                  <q-date v-model="dataSelecionada" mask="DD/MM/YYYY">
+                    <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Fechar" color="primary" flat />
+                    </div>
+                  </q-date>
+                  </q-popup-proxy>
+                </q-btn>
+              </template>
+            </q-input>
+          </div>
+
           <q-list bordered>
             <q-item clickable @click="exportarMotoristasPDF">
               <q-item-section>Lista de motoristas cadastrados</q-item-section>
               <q-item-section side><q-btn color="primary" label="Exportar PDF" /></q-item-section>
             </q-item>
             <q-item clickable @click="exportarMovimentacoesPDF">
-              <q-item-section>Lista de movimentações do dia</q-item-section>
+              <q-item-section>{{ tituloMovimentacoes }}</q-item-section>
               <q-item-section side><q-btn color="primary" label="Exportar PDF" /></q-item-section>
             </q-item>
           </q-list>
@@ -27,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import axios from 'axios'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -35,6 +66,25 @@ import autoTable from 'jspdf-autotable'
 const props = defineProps({
   title: String
 })
+
+// Data selecionada para filtro (inicializa com hoje)
+const dataSelecionada = ref(new Date().toLocaleDateString('pt-BR'))
+
+// Computed para o título das movimentações baseado na data selecionada
+const tituloMovimentacoes = computed(() => {
+  const hoje = new Date().toLocaleDateString('pt-BR')
+  if (dataSelecionada.value === hoje) {
+    return 'Lista de movimentações do dia (hoje)'
+  } else {
+    return `Lista de movimentações do dia ${dataSelecionada.value}`
+  }
+})
+
+// Função para converter data de DD/MM/YYYY para YYYY-MM-DD
+const formatarDataParaAPI = (data) => {
+  const [dia, mes, ano] = data.split('/')
+  return `${ano}-${mes}-${dia}`
+}
 
 async function exportarMotoristasPDF() {
   const { data } = await axios.get('/api/relatorio/motoristas')
@@ -89,16 +139,17 @@ async function exportarMotoristasPDF() {
 }
 
 async function exportarMovimentacoesPDF() {
-  const { data } = await axios.get('/api/relatorio/movimentacoes')
+  // Converter data selecionada para formato da API
+  const dataFormatada = formatarDataParaAPI(dataSelecionada.value)
+  
+  const { data } = await axios.get('/api/relatorio/movimentacoes', {
+    params: {
+      data: dataFormatada
+    }
+  })
   const doc = new jsPDF()
 
-  let hoje = new Date().toLocaleDateString('pt-BR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  })
-
-  doc.text('Movimentações do dia ' + hoje, 14, 16)
+  doc.text('Movimentações do dia ' + dataSelecionada.value, 14, 16)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
   
@@ -171,6 +222,8 @@ async function exportarMovimentacoesPDF() {
     }
   })
   
-  doc.save('movimentacoes_do_dia.pdf')
+  // Nome do arquivo com a data
+  const nomeArquivo = `movimentacoes_${dataSelecionada.value.replace(/\//g, '-')}.pdf`
+  doc.save(nomeArquivo)
 }
 </script>

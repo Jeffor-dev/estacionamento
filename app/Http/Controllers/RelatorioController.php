@@ -33,16 +33,18 @@ class RelatorioController extends Controller
         return response()->json(['motoristas' => $motoristas]);
     }
 
-    public function movimentacoesJson()
+    public function movimentacoesJson(Request $request)
     {
-        $hoje = now()->format('Y-m-d');
+        // Usar data do parâmetro ou hoje como padrão
+        $data = $request->get('data', now()->format('Y-m-d'));
+        
         $movimentacoes = Estacionamento::with('motorista.caminhao')
-            ->whereDate('entrada', $hoje)
-            ->orWhereDate('saida', $hoje)
+            ->whereDate('entrada', $data)
+            ->orWhereDate('saida', $data)
             ->get();
             
         // Calcular valor total
-        $valorTotal = $movimentacoes->sum('valor');
+        $valorTotal = $movimentacoes->sum('valor_pagamento');
         
         $movimentacoesMapeadas = $movimentacoes->map(function($m) {
             return [
@@ -51,8 +53,8 @@ class RelatorioController extends Controller
                 'modelo' => $m->motorista->caminhao->modelo ?? '',
                 'placa' => $m->motorista->caminhao->placa ?? '',
                 'entrada' => $m->entrada ? date('d/m/Y H:i', strtotime($m->entrada)) : '',
-                'valor' => $m->valor ? 'R$ ' . number_format($m->valor, 2, ',', '.') : '-',
-                'valor_numerico' => $m->valor ?? 0, // Para cálculos
+                'valor' => $m->valor_pagamento ? 'R$ ' . number_format($m->valor_pagamento, 2, ',', '.') : '-',
+                'valor_numerico' => $m->valor_pagamento ?? 0, // Para cálculos
                 'tipo_pagamento' => $m->tipo_pagamento ?? '-'
             ];
         });
