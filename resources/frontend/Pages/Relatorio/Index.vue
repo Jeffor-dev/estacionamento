@@ -97,9 +97,9 @@ async function exportarMotoristasPDF() {
   
   // Use autoTable diretamente
   autoTable(doc, {
-    head: [['ID', 'Nome', 'CPF', 'Telefone', 'Empresa', 'Placa', 'Modelo', 'Cor']],
-    body: data.motoristas.map(m => [
-      m.id, m.nome, m.cpf, m.telefone, m.empresa, m.placa, m.modelo, m.cor
+    head: [['#', 'Nome', 'CPF', 'Telefone', 'Empresa', 'Placa', 'Modelo', 'Cor']],
+    body: data.motoristas.map((m, index) => [
+      index + 1, m.nome, m.cpf, m.telefone, m.empresa, m.placa, m.modelo, m.cor
     ]),
     startY: 22,
     styles: {
@@ -158,9 +158,9 @@ async function exportarMovimentacoesPDF() {
   
   // Passar o doc como primeiro parâmetro
   autoTable(doc, {
-    head: [['ID', 'Motorista', 'Modelo', 'Placa', 'Entrada', 'Valor', 'Pagamento']],
-    body: data.movimentacoes.map(m => [
-      m.id, m.motorista, m.modelo, m.placa, m.entrada, m.valor, m.tipo_pagamento
+    head: [['#', 'Motorista', 'Modelo', 'Placa', 'Entrada', 'Valor', 'Pagamento']],
+    body: data.movimentacoes.map((m, index) => [
+      index + 1, m.motorista, m.modelo, m.placa, m.entrada, m.valor, m.tipo_pagamento
     ]),
     startY: 22,
       styles: {
