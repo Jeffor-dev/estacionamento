@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Motorista;
 use App\Models\Caminhao;
+use App\Facades\Toast;
 use Illuminate\Database\Eloquent\Builder;
 
 class MotoristaController extends Controller
@@ -57,6 +58,18 @@ class MotoristaController extends Controller
     public function atualizarMotorista($id)
     {
         $motorista = Motorista::findOrFail($id);
+        
+        // Verificar se já existe um caminhão com essa placa (excluindo o caminhão atual)
+        $placaInformada = strtoupper(request('placa'));
+        $placaExistente = Caminhao::where('placa', $placaInformada)
+                                 ->where('id', '!=', $motorista->caminhao_id)
+                                 ->exists();
+        
+        if ($placaExistente) {
+            Toast::error('Um caminhão com essa placa já está cadastrado.');
+            return back()->withInput();
+        }
+        
         $motorista->nome = request('nome');
         $motorista->cpf = request('cpf');
         $motorista->tipo_documento = request('tipoDocumento', 'CPF');
@@ -67,7 +80,7 @@ class MotoristaController extends Controller
 
         // Atualiza caminhão
         if ($motorista->caminhao) {
-            $motorista->caminhao->placa = strtoupper(request('placa'));
+            $motorista->caminhao->placa = $placaInformada;
             $motorista->caminhao->modelo = request('modelo');
             $motorista->caminhao->cor = request('cor');
             $motorista->caminhao->save();
@@ -88,6 +101,14 @@ class MotoristaController extends Controller
             'cor' => 'required|string|max:20',
             'modelo' => 'required|string|max:20',
         ]);
+
+        // Verificar se já existe um caminhão com essa placa
+        $placaExistente = Caminhao::where('placa', strtoupper($request->placa))->exists();
+        
+        if ($placaExistente) {
+            Toast::error('Um caminhão com essa placa já está cadastrado.');
+            return back()->withInput();
+        }
 
         $caminhao = Caminhao::create([
             'placa' => strtoupper($request->placa),
@@ -126,9 +147,12 @@ class MotoristaController extends Controller
 
         if ($busca) {
             $consulta->where(function (Builder $q) use ($busca) {
-                $q->where('nome', 'like', '%' . $busca . '%')
-                  ->orWhere('cpf', 'like', '%' . $busca . '%')
-                  ->orWhere('telefone', 'like', '%' . $busca . '%');
+            $q->where('nome', 'like', '%' . $busca . '%')
+              ->orWhere('cpf', 'like', '%' . $busca . '%')
+              ->orWhere('telefone', 'like', '%' . $busca . '%')
+              ->orWhereHas('caminhao', function (Builder $qc) use ($busca) {
+                  $qc->where('placa', 'like', '%' . $busca . '%');
+              });
             });
         }
 
