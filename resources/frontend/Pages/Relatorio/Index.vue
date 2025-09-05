@@ -148,8 +148,8 @@ async function exportarMovimentacoesPDF() {
     }
   })
   const doc = new jsPDF()
-
-  doc.text('Movimentações do dia ' + dataSelecionada.value, 14, 16)
+  doc.setFontSize(12)
+  doc.text('Movimentações do dia ' + dataSelecionada.value, 12, 14)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
   
@@ -163,11 +163,20 @@ async function exportarMovimentacoesPDF() {
       index + 1, m.motorista, m.modelo, m.placa, m.entrada, m.valor, m.tipo_pagamento
     ]),
     startY: 22,
+    pageBreak: 'auto',
+    rowPageBreak: 'avoid',
+    tableLineColor: [200, 200, 200],
+    tableLineWidth: 0.1,
+    // Configurar altura máxima para forçar quebra após 30 linhas
+    pageBreakBefore: function(cursor, doc) {
+      // Se já temos 30 linhas na página atual, quebra
+      return cursor.y > 750; // Altura que comporta aproximadamente 30 linhas
+    },
       styles: {
       font: 'helvetica',        // Fonte para toda a tabela
       fontStyle: 'normal',      // normal, bold, italic, bolditalic
-      fontSize: 9,              // Tamanho da fonte
-      cellPadding: 3,
+      fontSize: 8,              // Fonte um pouco maior
+      cellPadding: 2.44,         // Padding ligeiramente maior
       textColor: [0, 0, 0],     // Cor do texto [R, G, B]
       lineColor: [200, 200, 200], // Cor das linhas
       lineWidth: 0.1
@@ -175,10 +184,11 @@ async function exportarMovimentacoesPDF() {
     headStyles: {
       font: 'helvetica',
       fontStyle: 'bold',        // Cabeçalho em negrito
-      fontSize: 10,             // Fonte maior no cabeçalho
+      fontSize: 10,             // Fonte do cabeçalho um pouco maior
       fillColor: [52, 152, 219], // Cor de fundo
       textColor: [255, 255, 255], // Texto branco
-      halign: 'center'          // Centralizar texto
+      halign: 'center',         // Centralizar texto
+      cellPadding: 2.5          // Padding do cabeçalho
     },
     bodyStyles: {
       font: 'helvetica',
@@ -201,8 +211,8 @@ async function exportarMovimentacoesPDF() {
     styles: {
       font: 'helvetica',
       fontStyle: 'bold',
-      fontSize: 10,
-      cellPadding: 3,
+      fontSize: 8,             // Fonte proporcional
+      cellPadding: 2.2,         // Padding balanceado
       textColor: [0, 0, 0], // Preto por padrão
       lineColor: [200, 200, 200],
       lineWidth: 0.1,

@@ -160,47 +160,47 @@
         
         <div class="info-linha">
             <span class="info-label">Data/Hora:</span>
-            <span>{{ $dataAtual }}</span>
+            <span class="info-label">{{ $dataAtual }}</span>
         </div>
         
         <div class="info-linha">
             <span class="info-label">Motorista:</span>
-            <span>{{ $estacionamento->motorista->nome }}</span>
+            <span class="info-label">{{ $estacionamento->motorista->nome }}</span>
         </div>
         
         <div class="info-linha">
             <span class="info-label">{{ $estacionamento->motorista->tipo_documento === 'CNPJ' ? 'CNPJ:' : 'CPF:' }}</span>
-            <span>{{ $estacionamento->motorista->cpf }}</span>
+            <span class="info-label">{{ $estacionamento->motorista->cpf }}</span>
         </div>
         
         <div class="info-linha">
             <span class="info-label">Empresa:</span>
-            <span>{{ $estacionamento->motorista->empresa }}</span>
+            <span class="info-label">{{ $estacionamento->motorista->empresa }}</span>
         </div>
         
         <div class="info-linha">
             <span class="info-label">Veículo:</span>
-            <span>{{ $estacionamento->motorista->caminhao->modelo }}</span>
+            <span class="info-label">{{ $estacionamento->motorista->caminhao->modelo }}</span>
         </div>
         
         <div class="info-linha">
             <span class="info-label">Placa:</span>
-            <span>{{ $estacionamento->motorista->caminhao->placa }}</span>
+            <span class="info-label">{{ $estacionamento->motorista->caminhao->placa }}</span>
         </div>
         
         <div class="info-linha">
             <span class="info-label">Tipo Veículo:</span>
-            <span>{{ $estacionamento->tipo_veiculo == 'truck_ls' ? 'Truck/LS' : 'Bitrem' }}</span>
+            <span class="info-label">{{ $estacionamento->tipo_veiculo == 'truck_ls' ? 'Truck/LS' : 'Bitrem' }}</span>
         </div>
         
         <div class="info-linha">
             <span class="info-label">Entrada:</span>
-            <span>{{ \Carbon\Carbon::parse($estacionamento->entrada)->format('d/m/Y H:i') }}</span>
+            <span class="info-label">{{ \Carbon\Carbon::parse($estacionamento->entrada)->format('d/m/Y H:i') }}</span>
         </div>
         
         <div class="info-linha">
             <span class="info-label">Fidelidade:</span>
-            <span>{{ $estacionamento->motorista->contador_entradas }}/10 entradas</span>
+            <span class="info-label">{{ $estacionamento->motorista->contador_entradas }}/10 entradas</span>
         </div>
         
         @if($estacionamento->tipo_pagamento === 'GRATUITO')
