@@ -99,15 +99,17 @@ class ControleEstacionamentoController extends Controller
         // Buscar o motorista para verificar fidelidade
         $motorista = Motorista::findOrFail($request->motorista);
         
-        // Verificar se tem direito à gratuidade (ANTES de incrementar)
         $isGratuito = $motorista->temDireitoGratuidade();
         $valorFinal = $isGratuito ? 0 : $request->valorPagamento;
+        if($request->pagamento === 'Abastecimento') {
+            $valorFinal = 0;
+            $isGratuito = false; 
+        }
+        
 
-        // Se for entrada gratuita, zerar o contador para recomeçar o ciclo
         if ($isGratuito) {
             $motorista->update(['contador_entradas' => 0]);
         } else {
-            // Se não for gratuita, incrementar contador normalmente
             $motorista->incrementarContador();
         }
 

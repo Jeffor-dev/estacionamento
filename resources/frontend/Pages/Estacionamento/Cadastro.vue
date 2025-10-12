@@ -45,10 +45,12 @@
           <div class="row tw-gap-3 flex tw-my-5">
             <div class="col">
                 <q-select
+                  class="tw-mb-4"
                   filled
                   v-model="form.pagamento"
                   label="Tipo de Pagamento"
-                  :options="['Dinheiro', 'Cartão', 'Pix']" />
+                  :options="['Dinheiro', 'Cartão', 'Pix', 'Abastecimento']" />
+                  <span v-if="form.pagamento === 'Abastecimento'" class="text-green text-bold">Estacionamento gratuito</span>
             </div>
             <div class="col">
               <div class="tw-mb-2">
@@ -173,6 +175,9 @@
     }
 
     form.value.motorista = form.value.motorista.id
+    if(form.value.pagamento.toLowerCase() === 'abastecimento') {
+      form.value.valorPagamento = 0
+    } 
     router.post(route('estacionamento.cadastrar'), form.value)
     
   }

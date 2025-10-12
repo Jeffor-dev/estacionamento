@@ -231,6 +231,43 @@ async function exportarMovimentacoesPDF() {
       }
     }
   })
+
+  // Adicionar totais por categoria
+  const totaisPorCategoria = data.totais_por_categoria
+  const linhasTotaisCategoria = [
+    ['', '', '', '', 'Total em Dinheiro:', totaisPorCategoria.dinheiro.formatado, ''],
+    ['', '', '', '', 'Total no Cartão:', totaisPorCategoria.cartao.formatado, ''],
+    ['', '', '', '', 'Total via Pix:', totaisPorCategoria.pix.formatado, ''],
+    ['', '', '', '', 'Gratuito por Abastecimento:', totaisPorCategoria.abastecimento.formatado, '']
+  ]
+  
+  autoTable(doc, {
+    body: linhasTotaisCategoria,
+    startY: doc.lastAutoTable.finalY + 2, // Pequeno espaço após o total geral
+    styles: {
+      font: 'helvetica',
+      fontStyle: 'normal',
+      fontSize: 8,
+      cellPadding: 2,
+      textColor: [60, 60, 60],
+      lineColor: [220, 220, 220],
+      lineWidth: 0.1,
+      fillColor: [250, 250, 250], // Fundo mais claro
+      halign: 'center'
+    },
+    columnStyles: {
+      4: { 
+        halign: 'right',
+        textColor: [100, 100, 100], // Cinza mais claro para os labels
+        fontStyle: 'normal'
+      }, 
+      5: { 
+        halign: 'center', 
+        fontStyle: 'bold',
+        textColor: [0, 0, 0] // Preto para os valores
+      }
+    }
+  })
   
   // Nome do arquivo com a data
   const nomeArquivo = `movimentacoes_${dataSelecionada.value.replace(/\//g, '-')}.pdf`

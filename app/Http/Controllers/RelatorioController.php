@@ -46,6 +46,12 @@ class RelatorioController extends Controller
         // Calcular valor total
         $valorTotal = $movimentacoes->sum('valor_pagamento');
         
+        // Calcular totais por categoria de pagamento
+        $totalDinheiro = $movimentacoes->where('tipo_pagamento', 'Dinheiro')->sum('valor_pagamento');
+        $totalCartao = $movimentacoes->where('tipo_pagamento', 'Cartão')->sum('valor_pagamento');
+        $totalPix = $movimentacoes->where('tipo_pagamento', 'Pix')->sum('valor_pagamento');
+        $quantidadeAbastecimento = $movimentacoes->where('tipo_pagamento', 'Abastecimento')->count();
+        
         $movimentacoesMapeadas = $movimentacoes->map(function($m) {
             return [
                 'id' => $m->id,
@@ -62,7 +68,25 @@ class RelatorioController extends Controller
         return response()->json([
             'movimentacoes' => $movimentacoesMapeadas,
             'valor_total' => $valorTotal,
-            'valor_total_formatado' => 'R$ ' . number_format($valorTotal, 2, ',', '.')
+            'valor_total_formatado' => 'R$ ' . number_format($valorTotal, 2, ',', '.'),
+            'totais_por_categoria' => [
+                'dinheiro' => [
+                    'valor' => $totalDinheiro,
+                    'formatado' => 'R$ ' . number_format($totalDinheiro, 2, ',', '.')
+                ],
+                'cartao' => [
+                    'valor' => $totalCartao,
+                    'formatado' => 'R$ ' . number_format($totalCartao, 2, ',', '.')
+                ],
+                'pix' => [
+                    'valor' => $totalPix,
+                    'formatado' => 'R$ ' . number_format($totalPix, 2, ',', '.')
+                ],
+                'abastecimento' => [
+                    'valor' => $quantidadeAbastecimento,
+                    'formatado' => $quantidadeAbastecimento
+                ]
+            ]
         ]);
     }
 }
