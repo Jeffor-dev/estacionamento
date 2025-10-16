@@ -11,8 +11,8 @@
         <q-card-section>
           <div class="text-h6 tw-mb-4">Relatórios PDF</div>
           
-          <!-- Filtro de Data -->
-          <div class="tw-mb-4">
+          <!-- Filtros de Data e Turno -->
+          <div class="row q-gutter-md tw-mb-4">
             <q-input
               filled
               v-model="dataSelecionada"
@@ -39,6 +39,19 @@
                 </q-btn>
               </template>
             </q-input>
+            
+            <q-select
+              filled
+              v-model="turnoSelecionado"
+              :options="opcoeTurnos"
+              label="Turno"
+              hint="Selecione o turno para filtrar por horário"
+              style="max-width: 250px"
+              option-value="value"
+              option-label="label"
+              map-options
+              emit-value
+            />
           </div>
 
           <q-list bordered>
@@ -70,13 +83,25 @@ const props = defineProps({
 // Data selecionada para filtro (inicializa com hoje)
 const dataSelecionada = ref(new Date().toLocaleDateString('pt-BR'))
 
-// Computed para o título das movimentações baseado na data selecionada
+// Turno selecionado (padrão é turno 1)
+const turnoSelecionado = ref(1)
+
+// Opções de turnos
+const opcoeTurnos = [
+  { value: 1, label: 'Turno 1 (12:00 - 22:15)' },
+  { value: 2, label: 'Turno 2 (22:15 - 05:30)' },
+  { value: 3, label: 'Turno 3 (05:30 - 11:59)' }
+]
+
+// Computed para o título das movimentações baseado na data e turno selecionados
 const tituloMovimentacoes = computed(() => {
   const hoje = new Date().toLocaleDateString('pt-BR')
+  const turnoTexto = opcoeTurnos.find(t => t.value === turnoSelecionado.value)?.label || 'Turno 1'
+  
   if (dataSelecionada.value === hoje) {
-    return 'Lista de movimentações do dia (hoje)'
+    return `Lista de movimentações do dia (hoje) - ${turnoTexto}`
   } else {
-    return `Lista de movimentações do dia ${dataSelecionada.value}`
+    return `Lista de movimentações do dia ${dataSelecionada.value} - ${turnoTexto}`
   }
 })
 
@@ -144,12 +169,16 @@ async function exportarMovimentacoesPDF() {
   
   const { data } = await axios.get('/api/relatorio/movimentacoes', {
     params: {
-      data: dataFormatada
+      data: dataFormatada,
+      turno: turnoSelecionado.value
     }
   })
   const doc = new jsPDF()
   doc.setFontSize(12)
-  doc.text('Movimentações do dia ' + dataSelecionada.value, 12, 14)
+  
+  // Incluir turno no título do PDF
+  const turnoTexto = opcoeTurnos.find(t => t.value === turnoSelecionado.value)?.label || 'Turno 1'
+  doc.text(`Movimentações do dia ${dataSelecionada.value} - ${turnoTexto}`, 12, 14)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
   
@@ -269,8 +298,8 @@ async function exportarMovimentacoesPDF() {
     }
   })
   
-  // Nome do arquivo com a data
-  const nomeArquivo = `movimentacoes_${dataSelecionada.value.replace(/\//g, '-')}.pdf`
+  // Nome do arquivo com a data e turno
+  const nomeArquivo = `movimentacoes_${dataSelecionada.value.replace(/\//g, '-')}_turno${turnoSelecionado.value}.pdf`
   doc.save(nomeArquivo)
 }
 </script>
