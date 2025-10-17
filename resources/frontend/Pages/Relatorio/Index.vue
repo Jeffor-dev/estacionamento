@@ -174,9 +174,8 @@ const turnoSelecionado = ref(1)
 
 // Opções de turnos
 const opcoeTurnos = [
-  { value: 1, label: 'Turno 1 (12:00 - 22:15)' },
-  { value: 2, label: 'Turno 2 (22:15 - 05:30)' },
-  { value: 3, label: 'Turno 3 (05:30 - 11:59)' }
+  { value: 1, label: 'Turno 1 (05:15 - 22:15)' },
+  { value: 2, label: 'Turno 2 (22:15 - 05:15)' }
 ]
 
 // Variáveis do modal de visualização

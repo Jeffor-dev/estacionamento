@@ -43,21 +43,21 @@ class RelatorioController extends Controller
         
         // Aplicar filtros de horário baseados no turno
         switch ($turno) {
-            case 1: // Turno 1: 12:00 até 22:15
+            case 1: // Turno 1: 05:15 até 22:15
                 $query->where(function($q) use ($data) {
                     $q->where(function($sub) use ($data) {
                         $sub->whereDate('entrada', $data)
-                           ->whereTime('entrada', '>=', '12:00:00')
+                           ->whereTime('entrada', '>=', '05:15:00')
                            ->whereTime('entrada', '<=', '22:15:00');
                     })->orWhere(function($sub) use ($data) {
                         $sub->whereDate('saida', $data)
-                           ->whereTime('saida', '>=', '12:00:00')
+                           ->whereTime('saida', '>=', '05:15:00')
                            ->whereTime('saida', '<=', '22:15:00');
                     });
                 });
                 break;
                 
-            case 2: // Turno 2: 22:15 do dia selecionado até 05:30 do dia seguinte
+            case 2: // Turno 2: 22:15 do dia selecionado até 05:15 do dia seguinte
                 $dataSeguinte = date('Y-m-d', strtotime($data . ' +1 day'));
                 $query->where(function($q) use ($data, $dataSeguinte) {
                     // Movimentações que começaram no período do turno 2
@@ -67,9 +67,9 @@ class RelatorioController extends Controller
                             $sub1->whereDate('entrada', $data)
                                  ->whereTime('entrada', '>=', '22:15:00');
                         })->orWhere(function($sub2) use ($dataSeguinte) {
-                            // OU entrada no dia seguinte até 05:30
+                            // OU entrada no dia seguinte até 05:15
                             $sub2->whereDate('entrada', $dataSeguinte)
-                                 ->whereTime('entrada', '<=', '05:30:00');
+                                 ->whereTime('entrada', '<=', '05:15:00');
                         });
                     })
                     // E que também tenham saída dentro do período válido (se tiverem saída)
@@ -81,25 +81,11 @@ class RelatorioController extends Controller
                                       $sub1->whereDate('saida', $data)
                                            ->whereTime('saida', '>=', '22:15:00');
                                   })->orWhere(function($sub2) use ($dataSeguinte) {
-                                      // OU saída no dia seguinte até 05:30
+                                      // OU saída no dia seguinte até 05:15
                                       $sub2->whereDate('saida', $dataSeguinte)
-                                           ->whereTime('saida', '<=', '05:30:00');
+                                           ->whereTime('saida', '<=', '05:15:00');
                                   });
                               });
-                    });
-                });
-                break;
-                
-            case 3: // Turno 3: 05:30 até 11:59
-                $query->where(function($q) use ($data) {
-                    $q->where(function($sub) use ($data) {
-                        $sub->whereDate('entrada', $data)
-                           ->whereTime('entrada', '>=', '05:30:00')
-                           ->whereTime('entrada', '<=', '11:59:00');
-                    })->orWhere(function($sub) use ($data) {
-                        $sub->whereDate('saida', $data)
-                           ->whereTime('saida', '>=', '05:30:00')
-                           ->whereTime('saida', '<=', '11:59:00');
                     });
                 });
                 break;
