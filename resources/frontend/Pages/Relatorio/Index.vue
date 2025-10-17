@@ -59,14 +59,100 @@
               <q-item-section>Lista de motoristas cadastrados</q-item-section>
               <q-item-section side><q-btn color="primary" label="Exportar PDF" /></q-item-section>
             </q-item>
-            <q-item clickable @click="exportarMovimentacoesPDF">
+            <q-item>
               <q-item-section>{{ tituloMovimentacoes }}</q-item-section>
-              <q-item-section side><q-btn color="primary" label="Exportar PDF" /></q-item-section>
+              <q-item-section side>
+                <div class="q-gutter-sm">
+                  <q-btn 
+                    color="secondary" 
+                    label="Visualizar" 
+                    @click="visualizarMovimentacoes"
+                  />
+                  <q-btn 
+                    color="primary" 
+                    label="Exportar PDF" 
+                    @click="exportarMovimentacoesPDF"
+                  />
+                </div>
+              </q-item-section>
             </q-item>
           </q-list>
         </q-card-section>
       </q-card>
     </div>
+
+    <!-- Modal de Visualização das Movimentações -->
+    <q-dialog v-model="modalVisualizacao" maximized>
+      <q-card>
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">{{ tituloModalVisualizacao }}</div>
+          <q-space />
+          <q-btn flat dense v-close-popup color="white" label="Fechar" class="bg-amber" />
+        </q-card-section>
+
+        <q-card-section>
+          <!-- Resumo dos Totais -->
+          <div class="q-mb-md">
+            <q-card flat bordered class="q-pa-md">
+              <div class="text-subtitle1 q-mb-md">Resumo do Turno</div>
+              <div class="row q-gutter-md">
+                <div class="col">
+                  <div class="text-caption text-grey-7">Total Geral</div>
+                  <div class="text-h6 text-positive">{{ dadosVisualizacao.valor_total_formatado }}</div>
+                </div>
+                <div class="col">
+                  <div class="text-caption text-grey-7">Total em Dinheiro</div>
+                  <div class="text-body1">{{ dadosVisualizacao.totais_por_categoria?.dinheiro?.formatado }}</div>
+                </div>
+                <div class="col">
+                  <div class="text-caption text-grey-7">Total no Cartão</div>
+                  <div class="text-body1">{{ dadosVisualizacao.totais_por_categoria?.cartao?.formatado }}</div>
+                </div>
+                <div class="col">
+                  <div class="text-caption text-grey-7">Total via Pix</div>
+                  <div class="text-body1">{{ dadosVisualizacao.totais_por_categoria?.pix?.formatado }}</div>
+                </div>
+                <div class="col">
+                  <div class="text-caption text-grey-7">Gratuito por Abastecimento</div>
+                  <div class="text-body1">{{ dadosVisualizacao.totais_por_categoria?.abastecimento?.formatado }}</div>
+                </div>
+              </div>
+            </q-card>
+          </div>
+
+          <!-- Tabela de Movimentações -->
+          <q-table
+            :rows="dadosVisualizacao.movimentacoes || []"
+            :columns="colunasTabela"
+            row-key="id"
+            :pagination="{ rowsPerPage: 0 }"
+            :loading="carregandoVisualizacao"
+            flat
+            bordered
+          >
+            <template v-slot:body-cell-valor="props">
+              <q-td :props="props">
+                <span :class="props.row.valor === '-' ? 'text-grey' : 'text-positive'">
+                  {{ props.row.valor }}
+                </span>
+              </q-td>
+            </template>
+            
+            <template v-slot:body-cell-tipo_pagamento="props">
+              <q-td :props="props">
+                <q-chip 
+                  :color="getCorTipoPagamento(props.row.tipo_pagamento)"
+                  text-color="white"
+                  size="sm"
+                >
+                  {{ props.row.tipo_pagamento }}
+                </q-chip>
+              </q-td>
+            </template>
+          </q-table>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -93,6 +179,21 @@ const opcoeTurnos = [
   { value: 3, label: 'Turno 3 (05:30 - 11:59)' }
 ]
 
+// Variáveis do modal de visualização
+const modalVisualizacao = ref(false)
+const carregandoVisualizacao = ref(false)
+const dadosVisualizacao = ref({})
+
+// Colunas da tabela de visualização
+const colunasTabela = [
+  { name: 'motorista', label: 'Motorista', field: 'motorista', align: 'left', sortable: true },
+  { name: 'modelo', label: 'Modelo', field: 'modelo', align: 'left', sortable: true },
+  { name: 'placa', label: 'Placa', field: 'placa', align: 'center', sortable: true },
+  { name: 'entrada', label: 'Entrada', field: 'entrada', align: 'center', sortable: true },
+  { name: 'valor', label: 'Valor', field: 'valor', align: 'center', sortable: true },
+  { name: 'tipo_pagamento', label: 'Pagamento', field: 'tipo_pagamento', align: 'center', sortable: true }
+]
+
 // Computed para o título das movimentações baseado na data e turno selecionados
 const tituloMovimentacoes = computed(() => {
   const hoje = new Date().toLocaleDateString('pt-BR')
@@ -105,10 +206,52 @@ const tituloMovimentacoes = computed(() => {
   }
 })
 
+// Computed para o título do modal de visualização
+const tituloModalVisualizacao = computed(() => {
+  const turnoTexto = opcoeTurnos.find(t => t.value === turnoSelecionado.value)?.label || 'Turno 1'
+  return `Movimentações - ${dataSelecionada.value} - ${turnoTexto}`
+})
+
 // Função para converter data de DD/MM/YYYY para YYYY-MM-DD
 const formatarDataParaAPI = (data) => {
   const [dia, mes, ano] = data.split('/')
   return `${ano}-${mes}-${dia}`
+}
+
+// Função para definir cores dos chips de tipo de pagamento
+const getCorTipoPagamento = (tipo) => {
+  switch (tipo) {
+    case 'Dinheiro': return 'green'
+    case 'Cartão': return 'blue'
+    case 'Pix': return 'purple'
+    case 'Abastecimento': return 'orange'
+    case 'GRATUITO': return 'grey'
+    default: return 'grey'
+  }
+}
+
+// Função para visualizar movimentações
+async function visualizarMovimentacoes() {
+  carregandoVisualizacao.value = true
+  
+  try {
+    const dataFormatada = formatarDataParaAPI(dataSelecionada.value)
+    
+    const { data } = await axios.get('/api/relatorio/movimentacoes', {
+      params: {
+        data: dataFormatada,
+        turno: turnoSelecionado.value
+      }
+    })
+    
+    dadosVisualizacao.value = data
+    modalVisualizacao.value = true
+  } catch (error) {
+    console.error('Erro ao buscar movimentações:', error)
+    // Aqui você pode adicionar uma notificação de erro se quiser
+  } finally {
+    carregandoVisualizacao.value = false
+  }
 }
 
 async function exportarMotoristasPDF() {
