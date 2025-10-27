@@ -218,4 +218,39 @@ class ControleEstacionamentoController extends Controller
             return back()->withErrors(['error' => 'Erro ao registrar saída: ' . $e->getMessage()]);
         }
     }
+
+    public function edit($id)
+    {
+        $estacionamento = Estacionamento::with(['motorista.caminhao'])->findOrFail($id);
+
+        return Inertia::render('Estacionamento/Edit', [
+            'title' => 'Editar Estacionamento',
+            'estacionamento' => $estacionamento
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $estacionamento = Estacionamento::findOrFail($id);
+
+        // Validação
+        $request->validate([
+            'tipo_pagamento' => 'required|string|in:Dinheiro,Cartão,Pix,Abastecimento',
+            'valor_pagamento' => 'required|numeric|min:0',
+            'tipo_veiculo' => 'required|string|in:truck_ls,bitrem'
+        ]);
+
+        // Se o tipo de pagamento for abastecimento, zerar o valor
+        $valorFinal = $request->tipo_pagamento === 'Abastecimento' ? 0 : $request->valor_pagamento;
+
+        // Atualizar o registro
+        $estacionamento->update([
+            'tipo_pagamento' => $request->tipo_pagamento,
+            'valor_pagamento' => $valorFinal,
+            'tipo_veiculo' => $request->tipo_veiculo
+        ]);
+
+        return redirect()->route('estacionamento.index')
+            ->with('success', 'Registro de estacionamento atualizado com sucesso!');
+    }
 }

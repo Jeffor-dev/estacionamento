@@ -39,7 +39,9 @@ Route::post('/motorista', [MotoristaController::class, 'cadastrar'])->middleware
 Route::get('/relatorio', [RelatorioController::class, 'index'])->middleware(['auth', 'verified'])->name('relatorio.index');
 Route::get('/estacionamento', [ControleEstacionamentoController::class, 'index'])->middleware(['auth', 'verified'])->name('estacionamento.index');
 Route::get('/estacionamento/cadastro', [ControleEstacionamentoController::class, 'cadastroEstacionamento'])->middleware(['auth', 'verified'])->name('estacionamento.cadastro');
+Route::get('/estacionamento/{id}/edit', [ControleEstacionamentoController::class, 'edit'])->middleware(['auth', 'verified'])->name('estacionamento.edit');
 Route::post('/estacionamento', [ControleEstacionamentoController::class, 'cadastrar'])->middleware(['auth', 'verified'])->name('estacionamento.cadastrar');
+Route::put('/estacionamento/{id}', [ControleEstacionamentoController::class, 'update'])->middleware(['auth', 'verified'])->name('estacionamento.update');
 Route::put('/estacionamento/saida/{id}', [ControleEstacionamentoController::class, 'registrarSaida'])->middleware(['auth', 'verified'])->name('estacionamento.saida');
 
 Route::get('/relatorio/motoristas/pdf', [RelatorioController::class, 'motoristasPDF'])->name('relatorio.motoristas.pdf');
