@@ -13,3 +13,4 @@ Route::get('/estacionamento', [App\Http\Controllers\ControleEstacionamentoContro
 // Relatórios para exportação PDF via frontend
 Route::get('/relatorio/motoristas', [App\Http\Controllers\RelatorioController::class, 'motoristasJson']);
 Route::get('/relatorio/movimentacoes', [App\Http\Controllers\RelatorioController::class, 'movimentacoesJson']);
+Route::get('/relatorio/mensal', [App\Http\Controllers\RelatorioController::class, 'relatorioMensalJson']);

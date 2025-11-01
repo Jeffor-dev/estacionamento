@@ -54,6 +54,45 @@
             />
           </div>
 
+          <!-- Relatório Mensal -->
+          <div class="tw-mb-4">
+            <q-card flat bordered class="q-pa-md">
+              <div class="text-subtitle1 q-mb-md">Relatório Mensal</div>
+              <div class="row q-gutter-md items-end">
+                <div class="col-md-2 col-sm-4 col-xs-6">
+                  <q-select
+                    filled
+                    v-model="mesSelecionado"
+                    :options="opcoMeses"
+                    label="Mês"
+                    option-value="value"
+                    option-label="label"
+                    map-options
+                    emit-value
+                  />
+                </div>
+                <div class="col-md-2 col-sm-4 col-xs-6">
+                  <q-input
+                    filled
+                    v-model.number="anoSelecionado"
+                    label="Ano"
+                    type="number"
+                    :min="2020"
+                    :max="2030"
+                  />
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-12">
+                  <q-btn 
+                    color="primary" 
+                    label="Gerar Relatório Mensal PDF"
+                    @click="exportarRelatorioMensalPDF"
+                    :loading="gerandoMensal"
+                  />
+                </div>
+              </div>
+            </q-card>
+          </div>
+
           <q-list bordered>
             <q-item clickable @click="exportarMotoristasPDF">
               <q-item-section>Lista de motoristas cadastrados</q-item-section>
@@ -191,6 +230,27 @@ const colunasTabela = [
   { name: 'entrada', label: 'Entrada', field: 'entrada', align: 'center', sortable: true },
   { name: 'valor', label: 'Valor', field: 'valor', align: 'center', sortable: true },
   { name: 'tipo_pagamento', label: 'Pagamento', field: 'tipo_pagamento', align: 'center', sortable: true }
+]
+
+// Variáveis do relatório mensal
+const mesSelecionado = ref(new Date().getMonth() + 1) // Mês atual
+const anoSelecionado = ref(new Date().getFullYear()) // Ano atual
+const gerandoMensal = ref(false)
+
+// Opções de meses
+const opcoMeses = [
+  { value: 1, label: 'Janeiro' },
+  { value: 2, label: 'Fevereiro' },
+  { value: 3, label: 'Março' },
+  { value: 4, label: 'Abril' },
+  { value: 5, label: 'Maio' },
+  { value: 6, label: 'Junho' },
+  { value: 7, label: 'Julho' },
+  { value: 8, label: 'Agosto' },
+  { value: 9, label: 'Setembro' },
+  { value: 10, label: 'Outubro' },
+  { value: 11, label: 'Novembro' },
+  { value: 12, label: 'Dezembro' }
 ]
 
 // Computed para o título das movimentações baseado na data e turno selecionados
@@ -443,5 +503,99 @@ async function exportarMovimentacoesPDF() {
   // Nome do arquivo com a data e turno
   const nomeArquivo = `movimentacoes_${dataSelecionada.value.replace(/\//g, '-')}_turno${turnoSelecionado.value}.pdf`
   doc.save(nomeArquivo)
+}
+
+async function exportarRelatorioMensalPDF() {
+  gerandoMensal.value = true
+  
+  try {
+    const { data } = await axios.get('/api/relatorio/mensal', {
+      params: {
+        mes: mesSelecionado.value,
+        ano: anoSelecionado.value
+      }
+    })
+    
+    const doc = new jsPDF()
+    doc.setFontSize(16)
+    doc.text(`Relatório Mensal - ${data.nome_mes}/${data.ano}`, 14, 20)
+    
+    // Informações gerais
+    doc.setFontSize(12)
+    doc.text('Resumo Geral:', 14, 35)
+    
+    doc.setFontSize(10)
+    const resumoY = 45
+    doc.text(`• Quantidade total de registros: ${data.quantidade_registros}`, 20, resumoY)
+    doc.text(`• Valor total arrecadado: ${data.valor_total_formatado}`, 20, resumoY + 10)
+    
+    // Totais por forma de pagamento
+    doc.setFontSize(12)
+    doc.text('Arrecadação por Forma de Pagamento:', 14, resumoY + 25)
+    
+    doc.setFontSize(10)
+    const pagamentoY = resumoY + 35
+    doc.text(`• Dinheiro: ${data.totais_por_forma_pagamento.dinheiro.formatado}`, 20, pagamentoY)
+    doc.text(`• Cartão: ${data.totais_por_forma_pagamento.cartao.formatado}`, 20, pagamentoY + 10)
+    doc.text(`• Pix: ${data.totais_por_forma_pagamento.pix.formatado}`, 20, pagamentoY + 20)
+    doc.text(`• Abastecimento (Gratuito): ${data.totais_por_forma_pagamento.abastecimento.formatado}`, 20, pagamentoY + 30)
+    
+    // Tabela resumo usando autoTable
+    autoTable(doc, {
+      startY: pagamentoY + 45,
+      head: [['Forma de Pagamento', 'Valor/Quantidade']],
+      body: [
+        ['Dinheiro', data.totais_por_forma_pagamento.dinheiro.formatado],
+        ['Cartão', data.totais_por_forma_pagamento.cartao.formatado],
+        ['Pix', data.totais_por_forma_pagamento.pix.formatado],
+        ['Abastecimento (Gratuito)', data.totais_por_forma_pagamento.abastecimento.formatado],
+        ['TOTAL ARRECADADO', data.valor_total_formatado]
+      ],
+      styles: {
+        font: 'helvetica',
+        fontSize: 10,
+        cellPadding: 3,
+        textColor: [0, 0, 0],
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1
+      },
+      headStyles: {
+        fontStyle: 'bold',
+        fillColor: [52, 152, 219],
+        textColor: [255, 255, 255],
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { halign: 'left' },
+        1: { halign: 'right', fontStyle: 'bold' }
+      },
+      // Destacar linha do total
+      didParseCell: function (data) {
+        if (data.row.index === 4) { // Linha do total
+          data.cell.styles.fillColor = [240, 240, 240]
+          data.cell.styles.fontStyle = 'bold'
+        }
+      }
+    })
+    
+    // Rodapé
+    const pageHeight = doc.internal.pageSize.height
+    doc.setFontSize(8)
+    doc.text('Relatório gerado automaticamente pelo sistema de estacionamento', 14, pageHeight - 10)
+    doc.text(`Data de geração: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 14, pageHeight - 5)
+    
+    // Nome do arquivo
+    const nomeArquivoMensal = `relatorio_mensal_${String(mesSelecionado.value).padStart(2, '0')}_${anoSelecionado.value}.pdf`
+    doc.save(nomeArquivoMensal)
+    
+  } catch (error) {
+    console.error('Erro ao gerar relatório mensal:', error)
+    // Aqui você pode adicionar uma notificação de erro se quiser
+  } finally {
+    gerandoMensal.value = false
+  }
 }
 </script>
