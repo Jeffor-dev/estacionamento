@@ -5,7 +5,8 @@
     <div class="q-pa-md">
       <div class="q-gutter-md row bg-grey-2 tw-pb-4 tw-mb-5">
            <q-btn color="secondary" label="Registrar Entrada" :href="route('estacionamento.cadastro')"/>
-           <q-btn color="warning" label="Exportar PDF" @click="exportarMovimentacoesPDF"/>
+           <q-btn color="warning" label="Corrigir Motorista" @click="corrigirMotorista"/>
+
       </div>
       <div class="row items-center tw-mb-4">
         <q-radio v-model="statusFiltro" val="ativo" label="Gerar Tickets" color="green" />
@@ -15,7 +16,7 @@
         <q-table 
         title="Controle de Estacionamento" 
         ref="tableRef" 
-  :rows="dadosFiltrados" 
+        :rows="dadosFiltrados" 
         :columns="columns" 
         row-key="id" 
         :filter="filter"
@@ -116,6 +117,27 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Modal de Correção de Motoristas -->
+    <q-dialog v-model="modalCorrecao" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <i-mdi-alert-circle class="q-mr-sm text-negative" />
+          <span class="q-ml-sm">Confirmar Correção de Motoristas</span>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <p>Esta ação irá <strong class="text-negative">apagar</strong> todos os registros de estacionamento sem saída registrada que podem estar causando problemas.</p>
+          <p class="text-warning q-mt-sm">⚠️ Esta operação não pode ser desfeita!</p>
+          <p class="q-mt-sm">Deseja continuar?</p>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="primary" @click="fecharModalCorrecao" />
+          <q-btn flat label="Confirmar Exclusão" color="negative" @click="executarCorrecao" :loading="processandoCorrecao" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -164,6 +186,10 @@
   const processandoSaida = ref(false)
   const registroSelecionado = ref(null)
   const motoristaSelecionado = ref('')
+
+  // Modal de correção de motoristas
+  const modalCorrecao = ref(false)
+  const processandoCorrecao = ref(false)
 
   const columns = computed(() => {
     const baseColumns = [
@@ -325,5 +351,55 @@
     })
     
     doc.save('movimentacoes_do_dia.pdf')
+  }
+
+  function corrigirMotorista() {
+    // Abrir modal de confirmação
+    modalCorrecao.value = true
+  }
+
+  function fecharModalCorrecao() {
+    modalCorrecao.value = false
+    processandoCorrecao.value = false
+  }
+
+  function executarCorrecao() {
+    processandoCorrecao.value = true
+    
+    axios.delete(route('estacionamento.corrigir'), {
+      headers: {
+        'X-CSRF-TOKEN': csrfToken.value
+      }
+    })
+    .then(response => {
+      // Sucesso - fechar modal e mostrar notificação
+      fecharModalCorrecao()
+      
+      $q.notify({
+        type: 'positive',
+        message: `${response.data.registros_removidos || 0} registro(s) removido(s) com sucesso!`,
+        position: 'top',
+        timeout: 3000
+      })
+      
+      // Atualizar a tabela
+      tableRef.value.requestServerInteraction()
+    })
+    .catch(error => {
+      // Erro - mostrar notificação de erro
+      processandoCorrecao.value = false
+      console.error('Erro ao corrigir motoristas:', error)
+      
+      $q.notify({
+        type: 'negative',
+        message: 'Erro ao executar correção. Tente novamente.',
+        icon: 'report_problem',
+        position: 'top',
+        timeout: 3000
+      })
+    })
+    .finally(() => {
+      processandoCorrecao.value = false
+    })
   }
 </script>

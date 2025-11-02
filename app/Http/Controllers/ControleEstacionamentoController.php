@@ -253,4 +253,30 @@ class ControleEstacionamentoController extends Controller
         return redirect()->route('estacionamento.index')
             ->with('success', 'Registro de estacionamento atualizado com sucesso!');
     }
+
+    public function corrigirMotorista()
+    {
+        try {
+            // Contar quantos registros serão removidos
+            $registrosParaRemover = Estacionamento::whereNull('saida')->count();
+            
+            // Apagar todos os registros onde saida = null
+            $registrosRemovidos = Estacionamento::whereNull('saida')->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Correção executada com sucesso!',
+                'registros_removidos' => $registrosRemovidos
+            ], 200);
+            
+        } catch (\Exception $e) {
+            \Log::error('Erro ao corrigir motoristas: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno do servidor ao executar correção.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

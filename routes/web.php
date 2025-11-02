@@ -43,6 +43,7 @@ Route::get('/estacionamento/{id}/edit', [ControleEstacionamentoController::class
 Route::post('/estacionamento', [ControleEstacionamentoController::class, 'cadastrar'])->middleware(['auth', 'verified'])->name('estacionamento.cadastrar');
 Route::put('/estacionamento/{id}', [ControleEstacionamentoController::class, 'update'])->middleware(['auth', 'verified'])->name('estacionamento.update');
 Route::put('/estacionamento/saida/{id}', [ControleEstacionamentoController::class, 'registrarSaida'])->middleware(['auth', 'verified'])->name('estacionamento.saida');
+Route::delete('/estacionamento/corrigir', [ControleEstacionamentoController::class, 'corrigirMotorista'])->middleware(['auth', 'verified'])->name('estacionamento.corrigir');
 
 Route::get('/relatorio/motoristas/pdf', [RelatorioController::class, 'motoristasPDF'])->name('relatorio.motoristas.pdf');
 Route::get('/relatorio/movimentacoes/pdf', [RelatorioController::class, 'movimentacoesPDF'])->name('relatorio.movimentacoes.pdf');
