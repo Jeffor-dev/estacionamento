@@ -17,6 +17,7 @@ class Estacionamento extends Model
         'tipo_veiculo',
         'valor_pagamento',
         'valor',
+        'turno',
     ];
 
     public function motorista()

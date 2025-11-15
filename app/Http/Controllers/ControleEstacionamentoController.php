@@ -113,13 +113,22 @@ class ControleEstacionamentoController extends Controller
             $motorista->incrementarContador();
         }
 
+        // Calcular o turno baseado no horário de entrada
+        $entrada = now('America/Sao_Paulo');
+        $horaEntrada = $entrada->format('H:i:s');
+        
+        // Turno 1: 05:15 - 22:15
+        // Turno 2: 22:15 - 05:15
+        $turno = ($horaEntrada >= '05:15:00' && $horaEntrada <= '22:15:00') ? '1' : '2';
+
         $registro = Estacionamento::create([
             'motorista_id' => $request->motorista,
-            'entrada' => now('America/Sao_Paulo'),
+            'entrada' => $entrada,
             'saida' => null,
             'tipo_pagamento' => $isGratuito ? 'GRATUITO' : $request->pagamento,
             'tipo_veiculo' => $request->tipoVeiculo,
             'valor_pagamento' => $valorFinal,
+            'turno' => $turno,
         ]);
 
         $mensagem = $isGratuito 

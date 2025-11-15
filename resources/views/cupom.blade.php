@@ -199,6 +199,11 @@
         </div>
         
         <div class="info-linha">
+            <span class="info-label">Forma de Pagamento:</span>
+            <span class="info-label">{{ $estacionamento->tipo_pagamento }}</span>
+        </div>
+        
+        <div class="info-linha">
             <span class="info-label">Fidelidade:</span>
             <span class="info-label">{{ $estacionamento->motorista->contador_entradas }}/10 entradas</span>
         </div>

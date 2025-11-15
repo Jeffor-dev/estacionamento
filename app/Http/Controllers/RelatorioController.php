@@ -41,51 +41,25 @@ class RelatorioController extends Controller
         
         $query = Estacionamento::with('motorista.caminhao');
         
-        // Aplicar filtros de horário baseados no turno
+        // Aplicar filtros de horário baseados no turno - APENAS pela ENTRADA
         switch ($turno) {
             case 1: // Turno 1: 05:15 até 22:15
-                $query->where(function($q) use ($data) {
-                    $q->where(function($sub) use ($data) {
-                        $sub->whereDate('entrada', $data)
-                           ->whereTime('entrada', '>=', '05:15:00')
-                           ->whereTime('entrada', '<=', '22:15:00');
-                    })->orWhere(function($sub) use ($data) {
-                        $sub->whereDate('saida', $data)
-                           ->whereTime('saida', '>=', '05:15:00')
-                           ->whereTime('saida', '<=', '22:15:00');
-                    });
-                });
+                $query->whereDate('entrada', $data)
+                      ->whereTime('entrada', '>=', '05:15:00')
+                      ->whereTime('entrada', '<=', '22:15:00');
                 break;
                 
             case 2: // Turno 2: 22:15 do dia selecionado até 05:15 do dia seguinte
                 $dataSeguinte = date('Y-m-d', strtotime($data . ' +1 day'));
                 $query->where(function($q) use ($data, $dataSeguinte) {
-                    // Movimentações que começaram no período do turno 2
-                    $q->where(function($entrada) use ($data, $dataSeguinte) {
-                        $entrada->where(function($sub1) use ($data) {
-                            // Entrada no dia selecionado após 22:15
-                            $sub1->whereDate('entrada', $data)
-                                 ->whereTime('entrada', '>=', '22:15:00');
-                        })->orWhere(function($sub2) use ($dataSeguinte) {
-                            // OU entrada no dia seguinte até 05:15
-                            $sub2->whereDate('entrada', $dataSeguinte)
-                                 ->whereTime('entrada', '<=', '05:15:00');
-                        });
-                    })
-                    // E que também tenham saída dentro do período válido (se tiverem saída)
-                    ->where(function($saida) use ($data, $dataSeguinte) {
-                        $saida->whereNull('saida') // Sem saída ainda
-                              ->orWhere(function($comSaida) use ($data, $dataSeguinte) {
-                                  $comSaida->where(function($sub1) use ($data) {
-                                      // Saída no dia selecionado após 22:15
-                                      $sub1->whereDate('saida', $data)
-                                           ->whereTime('saida', '>=', '22:15:00');
-                                  })->orWhere(function($sub2) use ($dataSeguinte) {
-                                      // OU saída no dia seguinte até 05:15
-                                      $sub2->whereDate('saida', $dataSeguinte)
-                                           ->whereTime('saida', '<=', '05:15:00');
-                                  });
-                              });
+                    $q->where(function($sub1) use ($data) {
+                        // Entrada no dia selecionado após 22:15
+                        $sub1->whereDate('entrada', $data)
+                             ->whereTime('entrada', '>=', '22:15:00');
+                    })->orWhere(function($sub2) use ($dataSeguinte) {
+                        // OU entrada no dia seguinte até 05:15
+                        $sub2->whereDate('entrada', $dataSeguinte)
+                             ->whereTime('entrada', '<=', '05:15:00');
                     });
                 });
                 break;
