@@ -49,6 +49,27 @@ if not exist ".env" (
     php artisan key:generate
 )
 
+:: Verifica e executa migrations pendentes
+echo 🔍 Verificando migrations pendentes...
+php artisan migrate:status > nul 2>&1
+if %errorlevel% neq 0 (
+    echo ⚠️  Database nao conectado ou nao configurado. Pulando verificacao de migrations.
+) else (
+    php artisan migrate --dry-run > nul 2>&1
+    if %errorlevel% equ 0 (
+        echo ✅ Nenhuma migration pendente encontrada.
+    ) else (
+        echo 🔄 Migrations pendentes encontradas. Executando...
+        php artisan migrate --force
+        if %errorlevel% equ 0 (
+            echo ✅ Migrations executadas com sucesso!
+        ) else (
+            echo ❌ Erro ao executar migrations.
+        )
+    )
+)
+echo.
+
 echo 🔧 Iniciando Laravel server...
 echo 🌐 Laravel estara disponivel em: http://127.0.0.1:8000
 echo.
