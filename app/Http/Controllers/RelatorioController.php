@@ -37,35 +37,14 @@ class RelatorioController extends Controller
     {
         // Usar data do parâmetro ou hoje como padrão
         $data = $request->get('data', now()->format('Y-m-d'));
-        $turno = $request->get('turno', 1);
         
-        $query = Estacionamento::with('motorista.caminhao');
-        
-        // Aplicar filtros de horário baseados no turno - APENAS pela ENTRADA
-        switch ($turno) {
-            case 1: // Turno 1: 05:15 até 22:15
+        // Buscar todas as movimentações do dia (entrada ou saída)
+        $movimentacoes = Estacionamento::with('motorista.caminhao')
+            ->where(function($query) use ($data) {
                 $query->whereDate('entrada', $data)
-                      ->whereTime('entrada', '>=', '05:15:00')
-                      ->whereTime('entrada', '<=', '22:15:00');
-                break;
-                
-            case 2: // Turno 2: 22:15 do dia selecionado até 05:15 do dia seguinte
-                $dataSeguinte = date('Y-m-d', strtotime($data . ' +1 day'));
-                $query->where(function($q) use ($data, $dataSeguinte) {
-                    $q->where(function($sub1) use ($data) {
-                        // Entrada no dia selecionado após 22:15
-                        $sub1->whereDate('entrada', $data)
-                             ->whereTime('entrada', '>=', '22:15:00');
-                    })->orWhere(function($sub2) use ($dataSeguinte) {
-                        // OU entrada no dia seguinte até 05:15
-                        $sub2->whereDate('entrada', $dataSeguinte)
-                             ->whereTime('entrada', '<=', '05:15:00');
-                    });
-                });
-                break;
-        }
-        
-        $movimentacoes = $query->get();
+                      ->orWhereDate('saida', $data);
+            })
+            ->get();
             
         // Calcular valor total
         $valorTotal = $movimentacoes->sum('valor_pagamento');
