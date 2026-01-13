@@ -51,6 +51,18 @@
                   label="Tipo de Pagamento"
                   :options="['Dinheiro', 'Cartão', 'Pix', 'Abastecimento']" />
                   <span v-if="form.pagamento === 'Abastecimento'" class="text-green text-bold">Estacionamento gratuito</span>
+                  
+                <q-input
+                  class="tw-mb-4"
+                  filled
+                  v-model.number="form.quantidadeTickets"
+                  type="number"
+                  label="Quantidade de Tickets"
+                  :min="1"
+                  :max="50"
+                  :disable="form.pagamento === 'Abastecimento'"
+                  hint="Quantidade de tickets a serem comprados"
+                />
             </div>
             <div class="col">
               <div class="tw-mb-2">
@@ -63,22 +75,30 @@
                 inline
               />
               <div class="tw-mt-2 tw-text-sm">
-                <div v-if="motoristaSelecionado && motoristaSelecionado.tem_direito_gratuidade" 
+                <!-- Informações de preço em tempo real -->
+                <div class="tw-bg-gray-100 tw-border tw-border-gray-300 tw-px-3 tw-py-2 tw-rounded tw-mb-2">
+                  <div class="tw-flex tw-justify-between tw-items-center tw-mb-1">
+                    <span class="tw-font-medium">💰 Valor por ticket:</span>
+                    <span class="tw-font-bold tw-text-lg">R$ {{ form.valorPagamento.toFixed(2).replace('.', ',') }}</span>
+                  </div>
+                  <div class="tw-flex tw-justify-between tw-items-center tw-text-xs tw-text-gray-600">
+                    <span>Quantidade: {{ form.quantidadeTickets || 1 }} ticket(s)</span>
+                    <span>Subtotal: R$ {{ ((form.valorPagamento || 0) * (form.quantidadeTickets || 1)).toFixed(2).replace('.', ',') }}</span>
+                  </div>
+                </div>
+
+                
+                <div v-if="motoristaSelecionado && infoCompra.ticketsGratuitos > 0" 
                      class="tw-bg-green-100 tw-border tw-border-green-400 tw-text-green-700 tw-px-3 tw-py-2 tw-rounded tw-mb-2">
-                  🎉 <strong>ENTRADA GRATUITA!</strong> 🎉<br>
-                  <span class="tw-text-xs">Parabéns! Esta é sua 10ª entrada!</span>
+                  🎉 <strong>{{ infoCompra.ticketsGratuitos }} TICKET(S) GRATUITO(S)!</strong> 🎉<br>
+                  <span class="tw-text-xs">Parabéns! Você receberá ticket(s) gratuito(s) nesta compra!</span>
                 </div>
                 <div v-else-if="motoristaSelecionado && motoristaSelecionado.proxima_gratuidade <= 3 && motoristaSelecionado.proxima_gratuidade > 0"
                      class="tw-bg-yellow-100 tw-border tw-border-yellow-400 tw-text-yellow-700 tw-px-3 tw-py-2 tw-rounded tw-mb-2 tw-text-xs">
                   Faltam apenas {{ motoristaSelecionado.proxima_gratuidade }} entrada(s) para ganhar uma gratuita!
                 </div>
-                <div class="tw-text-gray-600">
-                  Valor: <strong v-if="motoristaSelecionado && motoristaSelecionado.tem_direito_gratuidade" class="tw-text-green-600">GRATUITO</strong>
-                  <strong v-else>R$ {{ form.valorPagamento.toFixed(2).replace('.', ',') }}</strong>
-                  <span v-if="motoristaSelecionado" class="tw-ml-2 tw-text-xs tw-text-gray-500">
-                    ({{ motoristaSelecionado.contador_entradas }}/10 entradas)
-                  </span>
-                </div>
+                
+                <!-- Valor Total Final -->
               </div>
             </div>
           </div>
@@ -107,7 +127,8 @@
     motorista: null,
     pagamento: null,
     tipoVeiculo: 'truck_ls',
-    valorPagamento: 10
+    valorPagamento: 10,
+    quantidadeTickets: 1
   })
 
   // Opções de tipo de veículo com valores
@@ -122,12 +143,26 @@
     }
   ]
 
-  // Watcher para atualizar o valor conforme o tipo de veículo selecionado
-  watch(() => form.value.tipoVeiculo, (novoTipo) => {
+  // Watcher para atualizar o valor conforme o tipo de veículo e quantidade
+  watch([() => form.value.tipoVeiculo, () => form.value.quantidadeTickets], ([novoTipo, novaQuantidade]) => {
     if (novoTipo === 'truck_ls') {
       form.value.valorPagamento = 10
     } else if (novoTipo === 'bitrem') {
       form.value.valorPagamento = 20
+    }
+  })
+
+  // Watcher para resetar quantidade quando for abastecimento
+  watch(() => form.value.pagamento, (novoPagamento) => {
+    if (novoPagamento === 'Abastecimento') {
+      form.value.quantidadeTickets = 1
+    }
+  })
+
+  // Watcher para resetar quantidade quando for abastecimento
+  watch(() => form.value.pagamento, (novoPagamento) => {
+    if (novoPagamento === 'Abastecimento') {
+      form.value.quantidadeTickets = 1
     }
   })
 
@@ -138,6 +173,44 @@
   const motoristaSelecionado = computed(() => {
     if (!form.value.motorista) return null
     return props.motoristas.find(m => m.id === form.value.motorista)
+  })
+
+  // Computed para calcular informações de compra
+  const infoCompra = computed(() => {
+    if (!motoristaSelecionado.value || form.value.pagamento === 'Abastecimento') {
+      return {
+        ticketsPagos: 0,
+        ticketsGratuitos: 0,
+        ticketsTotal: form.value.quantidadeTickets || 1,
+        valorTotal: 0
+      }
+    }
+
+    const motoristaContador = motoristaSelecionado.value.contador_entradas
+    const quantidadeDesejada = form.value.quantidadeTickets || 1
+    const valorUnitario = form.value.valorPagamento
+    
+    let ticketsPagos = 0
+    let ticketsGratuitos = 0
+    let contadorSimulado = motoristaContador
+
+    // Simular a compra ticket por ticket para calcular quantos serão gratuitos
+    for (let i = 0; i < quantidadeDesejada; i++) {
+      if (contadorSimulado === 10) {
+        ticketsGratuitos++
+        contadorSimulado = 1 // Reinicia o contador após o gratuito
+      } else {
+        ticketsPagos++
+        contadorSimulado++
+      }
+    }
+
+    return {
+      ticketsPagos,
+      ticketsGratuitos,
+      ticketsTotal: quantidadeDesejada,
+      valorTotal: ticketsPagos * valorUnitario
+    }
   })
 
   // Função para filtrar motoristas baseado na busca
@@ -164,7 +237,7 @@
 
   const cadastrar = () => {
 
-    if (!form.value.motorista || !form.value.pagamento || !form.value.tipoVeiculo) {
+    if (!form.value.motorista || !form.value.pagamento || !form.value.tipoVeiculo || !form.value.quantidadeTickets || form.value.quantidadeTickets < 1) {
       alert('Por favor, preencha todos os campos.')
       return
     }
@@ -174,10 +247,19 @@
       return
     }
 
+    if (form.value.quantidadeTickets > 50) {
+      alert('Quantidade máxima de tickets é 50.')
+      return
+    }
+
     form.value.motorista = form.value.motorista.id
     if(form.value.pagamento.toLowerCase() === 'abastecimento') {
       form.value.valorPagamento = 0
-    } 
+      form.value.quantidadeTickets = 1
+    } else {
+      form.value.valorPagamento = infoCompra.value.valorTotal
+    }
+    
     router.post(route('estacionamento.cadastrar'), form.value)
     
   }

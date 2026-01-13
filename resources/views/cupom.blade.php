@@ -203,12 +203,28 @@
             <span class="info-label">{{ $estacionamento->tipo_pagamento }}</span>
         </div>
         
+        @if($estacionamento->quantidade_tickets && $estacionamento->quantidade_tickets > 1)
+        <div class="info-linha" style="background: #e3f2fd; padding: 5px; border: 1px solid #2196f3; margin: 5px 0;">
+            <div style="font-weight: bold; color: #1565c0; font-size: 11px;">📊 COMPRA MÚLTIPLA</div>
+            <div style="font-size: 10px; color: #1565c0;">
+                Total: {{ $estacionamento->quantidade_tickets }} tickets<br>
+                @if($estacionamento->tickets_gratuitos && $estacionamento->tickets_gratuitos > 0)
+                Gratuitos: {{ $estacionamento->tickets_gratuitos }} 🎉
+                @endif
+            </div>
+        </div>
+        @endif
+        
         <div class="info-linha">
             <span class="info-label">Fidelidade:</span>
             <span class="info-label">{{ $estacionamento->motorista->contador_entradas }}/10 entradas</span>
         </div>
         
-        @if($estacionamento->tipo_pagamento === 'GRATUITO')
+        @if($estacionamento->tickets_gratuitos && $estacionamento->tickets_gratuitos > 0)
+        <div class="info-linha" style="background: #e8f5e8; padding: 5px; border: 1px solid #4caf50; margin: 5px 0;">
+            <span style="font-weight: bold; color: #2e7d32;">🎉 {{ $estacionamento->tickets_gratuitos }} TICKET(S) GRATUITO(S)! 🎉</span>
+        </div>
+        @elseif($estacionamento->tipo_pagamento === 'GRATUITO')
         <div class="info-linha" style="background: #e8f5e8; padding: 5px; border: 1px solid #4caf50; margin: 5px 0;">
             <span style="font-weight: bold; color: #2e7d32;">🎉 ENTRADA GRATUITA! 🎉</span>
         </div>

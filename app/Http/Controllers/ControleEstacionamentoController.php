@@ -85,6 +85,7 @@ class ControleEstacionamentoController extends Controller
             'pagamento' => 'required|string|max:20',
             'tipoVeiculo' => 'required|in:truck_ls,bitrem',
             'valorPagamento' => 'required|numeric|min:0',
+            'quantidadeTickets' => 'required|integer|min:1|max:50',
         ]);
 
         // Verificar se o motorista já está ativo no estacionamento
@@ -99,36 +100,54 @@ class ControleEstacionamentoController extends Controller
         // Buscar o motorista para verificar fidelidade
         $motorista = Motorista::findOrFail($request->motorista);
         
-        $isGratuito = $motorista->temDireitoGratuidade();
-        $valorFinal = $isGratuito ? 0 : $request->valorPagamento;
-        if($request->pagamento === 'Abastecimento') {
-            $valorFinal = 0;
-            $isGratuito = false; 
-        }
-        
+        $quantidadeTickets = $request->quantidadeTickets;
+        $ticketsPagos = 0;
+        $ticketsGratuitos = 0;
+        $contadorAtual = $motorista->contador_entradas;
 
-        if ($isGratuito) {
-            $motorista->update(['contador_entradas' => 0]);
+        // Calcular quantos tickets serão pagos e quantos serão gratuitos
+        if ($request->pagamento === 'Abastecimento') {
+            // Para abastecimento, sempre 1 ticket gratuito
+            $ticketsPagos = 0;
+            $ticketsGratuitos = 1;
+            $quantidadeTickets = 1;
         } else {
-            $motorista->incrementarContador();
+            // Simular compra ticket por ticket
+            for ($i = 0; $i < $quantidadeTickets; $i++) {
+                if ($contadorAtual === 10) {
+                    $ticketsGratuitos++;
+                    $contadorAtual = 1; // Reinicia após o gratuito
+                } else {
+                    $ticketsPagos++;
+                    $contadorAtual++;
+                }
+            }
         }
+
+        // Atualizar contador do motorista
+        $motorista->update(['contador_entradas' => $contadorAtual]);
 
         // Calcular o turno baseado no horário de entrada
         $entrada = now('America/Sao_Paulo');
-        $horaEntrada = $entrada->format('H:i:s');
         
         $registro = Estacionamento::create([
             'motorista_id' => $request->motorista,
             'entrada' => $entrada,
             'saida' => null,
-            'tipo_pagamento' => $isGratuito ? 'GRATUITO' : $request->pagamento,
+            'tipo_pagamento' => $request->pagamento,
             'tipo_veiculo' => $request->tipoVeiculo,
-            'valor_pagamento' => $valorFinal,
+            'valor_pagamento' => $request->valorPagamento,
+            'quantidade_tickets' => $quantidadeTickets,
+            'tickets_pagos' => $ticketsPagos,
+            'tickets_gratuitos' => $ticketsGratuitos,
         ]);
 
-        $mensagem = $isGratuito 
-            ? 'Entrada GRATUITA registrada! Parabéns por completar 10 entradas! Contador reiniciado.' 
-            : 'Entrada registrada com sucesso!';
+        $mensagemTickets = "";
+        if ($ticketsGratuitos > 0) {
+            $mensagemTickets = " Você recebeu {$ticketsGratuitos} ticket(s) gratuito(s)!";
+        }
+
+        $mensagem = "Compra de {$quantidadeTickets} ticket(s) registrada com sucesso!{$mensagemTickets}";
 
         return redirect()->route('estacionamento.index')->with('success', $mensagem);
     }
