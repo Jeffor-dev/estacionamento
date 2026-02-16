@@ -11,34 +11,51 @@
         <q-card-section>
           <div class="text-h6 tw-mb-4">Relatórios PDF</div>
           
-          <!-- Filtro de Data -->
+          <!-- Filtro de Data e Turno -->
           <div class="tw-mb-4">
-            <q-input
-              filled
-              v-model="dataSelecionada"
-              mask="##/##/####"
-              label="Data para Relatório"
-              hint="Selecione a data para filtrar as movimentações"
-              style="max-width: 300px"
-            >
-              <template v-slot:append>
-                <q-btn
-                  flat
-                  round
-                  dense
-                  class="cursor-pointer"
+            <div class="row q-gutter-md items-end">
+              <div class="col-md-3 col-sm-6 col-xs-12">
+                <q-input
+                  filled
+                  v-model="dataSelecionada"
+                  mask="##/##/####"
+                  label="Data para Relatório"
+                  hint="Selecione a data para filtrar"
                 >
-                  <i-mdi-calendar style="height: 32px; width: 32px;"/>
-                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                  <q-date v-model="dataSelecionada" mask="DD/MM/YYYY">
-                    <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Fechar" color="primary" flat />
-                    </div>
-                  </q-date>
-                  </q-popup-proxy>
-                </q-btn>
-              </template>
-            </q-input>
+                  <template v-slot:append>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      class="cursor-pointer"
+                    >
+                      <i-mdi-calendar style="height: 32px; width: 32px;"/>
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                      <q-date v-model="dataSelecionada" mask="DD/MM/YYYY">
+                        <div class="row items-center justify-end">
+                        <q-btn v-close-popup label="Fechar" color="primary" flat />
+                        </div>
+                      </q-date>
+                      </q-popup-proxy>
+                    </q-btn>
+                  </template>
+                </q-input>
+              </div>
+              
+              <div class="col-md-3 col-sm-6 col-xs-12">
+                <q-select
+                  filled
+                  v-model="turnoSelecionado"
+                  :options="opcoesTurno"
+                  label="Turno"
+                  option-value="value"
+                  option-label="label"
+                  map-options
+                  emit-value
+                  hint="Selecione o turno"
+                />
+              </div>
+            </div>
           </div>
 
           <!-- Relatório Mensal -->
@@ -120,7 +137,9 @@
           <!-- Resumo dos Totais -->
           <div class="q-mb-md">
             <q-card flat bordered class="q-pa-md">
-              <div class="text-subtitle1 q-mb-md">Resumo do Turno</div>
+              <div class="text-subtitle1 q-mb-md">
+                Resumo do {{ turnoSelecionado === 1 ? 'Turno 1 (05:00-21:59)' : 'Turno 2 (22:00-04:59)' }}
+              </div>
               <div class="row q-gutter-md">
                 <div class="col">
                   <div class="text-caption text-grey-7">Total Geral</div>
@@ -164,6 +183,20 @@
               </q-td>
             </template>
             
+            <template v-slot:body-cell-tickets="props">
+              <q-td :props="props">
+                <q-chip 
+                  v-if="props.row.tickets && props.row.tickets > 0"
+                  color="info"
+                  text-color="white"
+                  size="sm"
+                >
+                  {{ props.row.tickets }}
+                </q-chip>
+                <span v-else class="text-grey">-</span>
+              </q-td>
+            </template>
+            
             <template v-slot:body-cell-tipo_pagamento="props">
               <q-td :props="props">
                 <q-chip 
@@ -195,6 +228,50 @@ const props = defineProps({
 // Data selecionada para filtro (inicializa com hoje)
 const dataSelecionada = ref(new Date().toLocaleDateString('pt-BR'))
 
+// Função para determinar o turno atual baseado na hora
+const obterTurnoAtual = () => {
+  const agora = new Date()
+  const hora = agora.getHours()
+  
+  // Turno 1: 05:00 até 21:59
+  // Turno 2: 22:00 até 04:59
+  if (hora >= 5 && hora <= 21) {
+    return 1 // Turno 1
+  } else {
+    return 2 // Turno 2
+  }
+}
+
+// Função para obter a data de referência para o turno
+const obterDataReferencia = () => {
+  const agora = new Date()
+  const hora = agora.getHours()
+  
+  // Se está entre 00:00 e 04:59, a data de referência é ontem
+  // (pois faz parte do turno 2 que começou ontem às 22:00)
+  if (hora >= 0 && hora < 5) {
+    const ontem = new Date(agora)
+    ontem.setDate(ontem.getDate() - 1)
+    return ontem.toLocaleDateString('pt-BR')
+  } else {
+    return agora.toLocaleDateString('pt-BR')
+  }
+}
+
+// Turno selecionado (inicializa com o turno atual baseado na hora)
+const turnoSelecionado = ref(obterTurnoAtual())
+
+// Atualizar a data de referência se necessário
+if (obterTurnoAtual() === 2 && new Date().getHours() < 5) {
+  dataSelecionada.value = obterDataReferencia()
+}
+
+// Opções de turno
+const opcoesTurno = [
+  { value: 1, label: 'Turno 1 (05:00 - 22:00)' },
+  { value: 2, label: 'Turno 2 (22:00 - 05:00)' }
+]
+
 // Variáveis do modal de visualização
 const modalVisualizacao = ref(false)
 const carregandoVisualizacao = ref(false)
@@ -206,6 +283,7 @@ const colunasTabela = [
   { name: 'modelo', label: 'Modelo', field: 'modelo', align: 'left', sortable: true },
   { name: 'placa', label: 'Placa', field: 'placa', align: 'center', sortable: true },
   { name: 'entrada', label: 'Entrada', field: 'entrada', align: 'center', sortable: true },
+  { name: 'tickets', label: 'Tickets', field: 'tickets', align: 'center', sortable: true },
   { name: 'valor', label: 'Valor', field: 'valor', align: 'center', sortable: true },
   { name: 'tipo_pagamento', label: 'Pagamento', field: 'tipo_pagamento', align: 'center', sortable: true }
 ]
@@ -234,17 +312,19 @@ const opcoMeses = [
 // Computed para o título das movimentações baseado na data selecionada
 const tituloMovimentacoes = computed(() => {
   const hoje = new Date().toLocaleDateString('pt-BR')
+  const nomeTurno = turnoSelecionado.value === 1 ? 'Turno 1 (05:00-21:59)' : 'Turno 2 (22:00-04:59)'
   
   if (dataSelecionada.value === hoje) {
-    return `Lista de movimentações do dia (hoje)`
+    return `Movimentações de hoje - ${nomeTurno}`
   } else {
-    return `Lista de movimentações do dia ${dataSelecionada.value}`
+    return `Movimentações ${dataSelecionada.value} - ${nomeTurno}`
   }
 })
 
 // Computed para o título do modal de visualização
 const tituloModalVisualizacao = computed(() => {
-  return `Movimentações - ${dataSelecionada.value}`
+  const nomeTurno = turnoSelecionado.value === 1 ? 'Turno 1 (05:00-21:59)' : 'Turno 2 (22:00-04:59)'
+  return `${dataSelecionada.value} - ${nomeTurno}`
 })
 
 // Função para converter data de DD/MM/YYYY para YYYY-MM-DD
@@ -274,7 +354,8 @@ async function visualizarMovimentacoes() {
     
     const { data } = await axios.get('/api/relatorio/movimentacoes', {
       params: {
-        data: dataFormatada
+        data: dataFormatada,
+        turno: turnoSelecionado.value
       }
     })
     
@@ -346,14 +427,16 @@ async function exportarMovimentacoesPDF() {
   
   const { data } = await axios.get('/api/relatorio/movimentacoes', {
     params: {
-      data: dataFormatada
+      data: dataFormatada,
+      turno: turnoSelecionado.value
     }
   })
   const doc = new jsPDF()
   doc.setFontSize(12)
   
-  // Título simples do PDF
-  doc.text(`Movimentações do dia ${dataSelecionada.value}`, 12, 14)
+  // Título com informação do turno
+  const nomeTurno = turnoSelecionado.value === 1 ? 'Turno 1 (05:00-21:59)' : 'Turno 2 (22:00-04:59)'
+  doc.text(`Movimentações ${dataSelecionada.value} - ${nomeTurno}`, 12, 14)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
   
@@ -362,9 +445,9 @@ async function exportarMovimentacoesPDF() {
   
   // Passar o doc como primeiro parâmetro
   autoTable(doc, {
-    head: [['#', 'Motorista', 'Modelo', 'Placa', 'Entrada', 'Valor', 'Pagamento']],
+    head: [['#', 'Motorista', 'Modelo', 'Placa', 'Entrada', 'Tickets', 'Valor', 'Pagamento']],
     body: data.movimentacoes.map((m, index) => [
-      index + 1, m.motorista, m.modelo, m.placa, m.entrada, m.valor, m.tipo_pagamento
+      index + 1, m.motorista, m.modelo, m.placa, m.entrada, m.tickets || '-', m.valor, m.tipo_pagamento
     ]),
     startY: 22,
     pageBreak: 'auto',
@@ -410,7 +493,7 @@ async function exportarMovimentacoesPDF() {
   
   // Adicionar linha de total como uma segunda tabela para manter o estilo
   autoTable(doc, {
-    body: [['', '', '', '', 'TOTAL:', valorTotal, '']],
+    body: [['', '', '', '', '', 'TOTAL:', valorTotal, '']],
     startY: doc.lastAutoTable.finalY,
     styles: {
       font: 'helvetica',
@@ -424,11 +507,11 @@ async function exportarMovimentacoesPDF() {
       halign: 'center'
     },
     columnStyles: {
-      4: { 
+      5: { 
         halign: 'right',
         textColor: [128, 128, 128] // Cinza para "TOTAL:"
       }, 
-      5: { 
+      6: { 
         halign: 'center', 
         fontStyle: 'bold',
         textColor: [0, 0, 0] // Preto para o valor
@@ -439,10 +522,10 @@ async function exportarMovimentacoesPDF() {
   // Adicionar totais por categoria
   const totaisPorCategoria = data.totais_por_categoria
   const linhasTotaisCategoria = [
-    ['', '', '', '', 'Total em Dinheiro:', totaisPorCategoria.dinheiro.formatado, ''],
-    ['', '', '', '', 'Total no Cartão:', totaisPorCategoria.cartao.formatado, ''],
-    ['', '', '', '', 'Total via Pix:', totaisPorCategoria.pix.formatado, ''],
-    ['', '', '', '', 'Gratuito por Abastecimento:', totaisPorCategoria.abastecimento.formatado, '']
+    ['', '', '', '', '', 'Total em Dinheiro:', totaisPorCategoria.dinheiro.formatado, ''],
+    ['', '', '', '', '', 'Total no Cartão:', totaisPorCategoria.cartao.formatado, ''],
+    ['', '', '', '', '', 'Total via Pix:', totaisPorCategoria.pix.formatado, ''],
+    ['', '', '', '', '', 'Gratuito por Abastecimento:', totaisPorCategoria.abastecimento.formatado, '']
   ]
   
   autoTable(doc, {
@@ -460,12 +543,12 @@ async function exportarMovimentacoesPDF() {
       halign: 'center'
     },
     columnStyles: {
-      4: { 
+      5: { 
         halign: 'right',
         textColor: [100, 100, 100], // Cinza mais claro para os labels
         fontStyle: 'normal'
       }, 
-      5: { 
+      6: { 
         halign: 'center', 
         fontStyle: 'bold',
         textColor: [0, 0, 0] // Preto para os valores
@@ -473,8 +556,8 @@ async function exportarMovimentacoesPDF() {
     }
   })
   
-  // Nome do arquivo com a data
-  const nomeArquivo = `movimentacoes_${dataSelecionada.value.replace(/\//g, '-')}.pdf`
+  // Nome do arquivo com a data e turno
+  const nomeArquivo = `movimentacoes_${dataSelecionada.value.replace(/\//g, '-')}_turno${turnoSelecionado.value}.pdf`
   doc.save(nomeArquivo)
 }
 

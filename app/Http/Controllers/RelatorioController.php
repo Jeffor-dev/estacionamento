@@ -37,14 +37,31 @@ class RelatorioController extends Controller
     {
         // Usar data do parâmetro ou hoje como padrão
         $data = $request->get('data', now()->format('Y-m-d'));
+        $turno = $request->get('turno', 1); // Padrão turno 1
         
-        // Buscar todas as movimentações do dia (entrada ou saída)
-        $movimentacoes = Estacionamento::with('motorista.caminhao')
-            ->where(function($query) use ($data) {
-                $query->whereDate('entrada', $data)
-                      ->orWhereDate('saida', $data);
-            })
-            ->get();
+        // Buscar movimentações baseado no turno
+        if ($turno == 1) {
+            // Turno 1: 05:00 até 21:59 do mesmo dia
+            $movimentacoes = Estacionamento::with('motorista.caminhao')
+                ->where(function($query) use ($data) {
+                    $query->whereBetween('entrada', [
+                        $data . ' 05:00:00',
+                        $data . ' 21:59:59'
+                    ]);
+                })
+                ->get();
+        } else {
+            // Turno 2: 22:00 de um dia até 04:59 do dia seguinte
+            // Para o turno 2, a data selecionada é considerada como o dia de início
+            $dataInicio = $data . ' 22:00:00';
+            $dataFim = date('Y-m-d', strtotime($data . ' +1 day')) . ' 04:59:59';
+            
+            $movimentacoes = Estacionamento::with('motorista.caminhao')
+                ->where(function($query) use ($dataInicio, $dataFim) {
+                    $query->whereBetween('entrada', [$dataInicio, $dataFim]);
+                })
+                ->get();
+        }
             
         // Calcular valor total
         $valorTotal = $movimentacoes->sum('valor_pagamento');
@@ -62,6 +79,7 @@ class RelatorioController extends Controller
                 'modelo' => $m->motorista->caminhao->modelo ?? '',
                 'placa' => $m->motorista->caminhao->placa ?? '',
                 'entrada' => $m->entrada ? date('d/m/Y H:i', strtotime($m->entrada)) : '',
+                'tickets' => $m->quantidade_tickets ?? 0,
                 'valor' => $m->valor_pagamento ? 'R$ ' . number_format($m->valor_pagamento, 2, ',', '.') : '-',
                 'valor_numerico' => $m->valor_pagamento ?? 0, // Para cálculos
                 'tipo_pagamento' => $m->tipo_pagamento ?? '-'
@@ -72,6 +90,8 @@ class RelatorioController extends Controller
             'movimentacoes' => $movimentacoesMapeadas,
             'valor_total' => $valorTotal,
             'valor_total_formatado' => 'R$ ' . number_format($valorTotal, 2, ',', '.'),
+            'turno' => $turno,
+            'data_referencia' => $data,
             'totais_por_categoria' => [
                 'dinheiro' => [
                     'valor' => $totalDinheiro,
