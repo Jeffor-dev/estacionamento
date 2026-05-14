@@ -17,6 +17,7 @@
             <tr>
                 <th>ID</th>
                 <th>Motorista</th>
+                <th>Empresa</th>
                 <th>Modelo</th>
                 <th>Placa</th>
                 <th>Entrada</th>
@@ -29,6 +30,7 @@
             <tr>
                 <td>{{ $mov->id }}</td>
                 <td>{{ $mov->motorista->nome ?? '' }}</td>
+                <td>{{ $mov->motorista->empresa ?? '' }}</td>
                 <td>{{ $mov->motorista->caminhao->modelo ?? '' }}</td>
                 <td>{{ $mov->motorista->caminhao->placa ?? '' }}</td>
                 <td>{{ $mov->entrada ? date('d/m/Y H:i', strtotime($mov->entrada)) : '' }}</td>

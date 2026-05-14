@@ -46,6 +46,9 @@
           <q-td key="nome" :props="props">
             {{ props.row.nome }}
           </q-td>
+          <q-td key="empresa" :props="props">
+            {{ props.row.empresa || '-' }}
+          </q-td>
           <q-td key="cpf" :props="props">
             {{ props.row.cpf }}
           </q-td>
@@ -108,6 +111,7 @@
     const baseColumns = [
       { name: 'id', required: true, label: 'ID', align: 'left', field: row => row.id, format: val => `${val}`, sortable: true, style: 'width: 80px' },
       { name: 'nome', align: 'left', label: 'Nome', field: 'nome' },
+      { name: 'empresa', align: 'left', label: 'Empresa', field: 'empresa' },
       { name: 'cpf', align: 'left', label: 'CPF/CNPJ', field: 'cpf' },
       { name: 'tipo_documento', align: 'center', label: 'Tipo', field: 'tipo_documento', style: 'width: 80px' },
       { name: 'caminhao-placa', align: 'left', label: 'Caminhão Placa', field: row => row.caminhao?.placa || '' },

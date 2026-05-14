@@ -280,6 +280,7 @@ const dadosVisualizacao = ref({})
 // Colunas da tabela de visualização
 const colunasTabela = [
   { name: 'motorista', label: 'Motorista', field: 'motorista', align: 'left', sortable: true },
+  { name: 'empresa', label: 'Empresa', field: 'empresa', align: 'left', sortable: true },
   { name: 'modelo', label: 'Modelo', field: 'modelo', align: 'left', sortable: true },
   { name: 'placa', label: 'Placa', field: 'placa', align: 'center', sortable: true },
   { name: 'entrada', label: 'Entrada', field: 'entrada', align: 'center', sortable: true },
@@ -445,9 +446,9 @@ async function exportarMovimentacoesPDF() {
   
   // Passar o doc como primeiro parâmetro
   autoTable(doc, {
-    head: [['#', 'Motorista', 'Modelo', 'Placa', 'Entrada', 'Tickets', 'Valor', 'Pagamento']],
+    head: [['#', 'Motorista', 'Empresa', 'Modelo', 'Placa', 'Entrada', 'Tickets', 'Valor', 'Pagamento']],
     body: data.movimentacoes.map((m, index) => [
-      index + 1, m.motorista, m.modelo, m.placa, m.entrada, m.tickets || '-', m.valor, m.tipo_pagamento
+      index + 1, m.motorista, m.empresa || '-', m.modelo, m.placa, m.entrada, m.tickets || '-', m.valor, m.tipo_pagamento
     ]),
     startY: 22,
     pageBreak: 'auto',
@@ -493,7 +494,7 @@ async function exportarMovimentacoesPDF() {
   
   // Adicionar linha de total como uma segunda tabela para manter o estilo
   autoTable(doc, {
-    body: [['', '', '', '', '', 'TOTAL:', valorTotal, '']],
+    body: [['', '', '', '', '', '', 'TOTAL:', valorTotal, '']],
     startY: doc.lastAutoTable.finalY,
     styles: {
       font: 'helvetica',
@@ -507,12 +508,12 @@ async function exportarMovimentacoesPDF() {
       halign: 'center'
     },
     columnStyles: {
-      5: { 
+      6: {
         halign: 'right',
         textColor: [128, 128, 128] // Cinza para "TOTAL:"
-      }, 
-      6: { 
-        halign: 'center', 
+      },
+      7: {
+        halign: 'center',
         fontStyle: 'bold',
         textColor: [0, 0, 0] // Preto para o valor
       }
@@ -522,10 +523,10 @@ async function exportarMovimentacoesPDF() {
   // Adicionar totais por categoria
   const totaisPorCategoria = data.totais_por_categoria
   const linhasTotaisCategoria = [
-    ['', '', '', '', '', 'Total em Dinheiro:', totaisPorCategoria.dinheiro.formatado, ''],
-    ['', '', '', '', '', 'Total no Cartão:', totaisPorCategoria.cartao.formatado, ''],
-    ['', '', '', '', '', 'Total via Pix:', totaisPorCategoria.pix.formatado, ''],
-    ['', '', '', '', '', 'Gratuito por Abastecimento:', totaisPorCategoria.abastecimento.formatado, '']
+    ['', '', '', '', '', '', 'Total em Dinheiro:', totaisPorCategoria.dinheiro.formatado, ''],
+    ['', '', '', '', '', '', 'Total no Cartão:', totaisPorCategoria.cartao.formatado, ''],
+    ['', '', '', '', '', '', 'Total via Pix:', totaisPorCategoria.pix.formatado, ''],
+    ['', '', '', '', '', '', 'Gratuito por Abastecimento:', totaisPorCategoria.abastecimento.formatado, '']
   ]
   
   autoTable(doc, {
@@ -543,13 +544,13 @@ async function exportarMovimentacoesPDF() {
       halign: 'center'
     },
     columnStyles: {
-      5: { 
+      6: {
         halign: 'right',
         textColor: [100, 100, 100], // Cinza mais claro para os labels
         fontStyle: 'normal'
-      }, 
-      6: { 
-        halign: 'center', 
+      },
+      7: {
+        halign: 'center',
         fontStyle: 'bold',
         textColor: [0, 0, 0] // Preto para os valores
       }

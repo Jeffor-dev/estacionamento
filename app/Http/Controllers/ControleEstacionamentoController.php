@@ -22,6 +22,7 @@ class ControleEstacionamentoController extends Controller
                 'valor_pagamento' => $registro->valor_pagamento,
                 'motorista' => $registro->motorista ? [
                     'nome' => $registro->motorista->nome,
+                    'empresa' => $registro->motorista->empresa,
                     'caminhao' => [
                         'placa' => $registro->motorista->caminhao ? $registro->motorista->caminhao->placa : null,
                         'modelo' => $registro->motorista->caminhao ? $registro->motorista->caminhao->modelo : null,
@@ -189,7 +190,10 @@ class ControleEstacionamentoController extends Controller
         $ret['lista'] = $registros->map(function ($registro) {
             return [
                 'id' => $registro->id,
-                'motorista' => $registro->motorista ? $registro->motorista->nome : 'N/A',
+                'motorista' => $registro->motorista ? [
+                    'nome' => $registro->motorista->nome,
+                    'empresa' => $registro->motorista->empresa,
+                ] : null,
                 'entrada' => $registro->entrada,
                 'saida' => $registro->saida,
                 'valor_pagamento' => $registro->valor_pagamento,

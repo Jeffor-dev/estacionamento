@@ -76,6 +76,7 @@ class RelatorioController extends Controller
             return [
                 'id' => $m->id,
                 'motorista' => $m->motorista->nome ?? '',
+                'empresa' => $m->motorista->empresa ?? '',
                 'modelo' => $m->motorista->caminhao->modelo ?? '',
                 'placa' => $m->motorista->caminhao->placa ?? '',
                 'entrada' => $m->entrada ? date('d/m/Y H:i', strtotime($m->entrada)) : '',

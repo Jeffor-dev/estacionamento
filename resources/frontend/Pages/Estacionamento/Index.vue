@@ -63,7 +63,10 @@
               {{ props.row.id }}
             </q-td>
             <q-td key="motorista" :props="props">
-              {{ props.row.motorista }}
+              {{ props.row.motorista?.nome }}
+            </q-td>
+            <q-td key="empresa" :props="props">
+              {{ props.row.motorista?.empresa || '-' }}
             </q-td>
             <q-td key="entrada" :props="props">
               {{ new Date(props.row.entrada).toLocaleTimeString('pt-BR') }}
@@ -195,6 +198,7 @@
     const baseColumns = [
       { name: 'id', required: true, label: 'ID', align: 'left', field: row => row.id, format: val => `${val}`, sortable: true, style: 'width: 80px' },
       { name: 'motorista', align: 'left', label: 'Motorista', field: 'motorista' },
+      { name: 'empresa', align: 'left', label: 'Empresa', field: row => row.motorista?.empresa || '-' },
       { name: 'entrada', align: 'left', label: 'Entrada', field: 'entrada' },
       { name: 'caminhao-placa', align: 'left', label: 'Placa', field: row => row.caminhao?.placa || '' },
       { name: 'caminhao-modelo', align: 'center', label: 'Modelo', field: row => row.caminhao?.modelo || '' },
@@ -314,9 +318,9 @@
     
     // Passar o doc como primeiro parâmetro
     autoTable(doc, {
-      head: [['ID', 'Motorista', 'Placa', 'Modelo', 'Cor', 'Entrada', 'Saída', 'Valor']],
+      head: [['ID', 'Motorista', 'Empresa', 'Placa', 'Modelo', 'Entrada', 'Tickets', 'Valor', 'Pagamento']],
       body: data.movimentacoes.map(m => [
-        m.id, m.motorista, m.placa, m.modelo, m.cor, m.entrada, m.saida, m.valor
+        m.id, m.motorista, m.empresa || '-', m.placa, m.modelo, m.entrada, m.tickets, m.valor, m.tipo_pagamento
       ]),
       startY: 22,
         styles: {
